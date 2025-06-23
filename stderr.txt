@@ -1,2 +1,0 @@
-slurmstepd-taurus: error: couldn't chdir to `/mnt/data1/yifengliu/qe-lr/slurm': No such file or directory: going to /tmp instead
-slurmstepd-taurus: error: couldn't chdir to `/mnt/data1/yifengliu/qe-lr/slurm': No such file or directory: going to /tmp instead

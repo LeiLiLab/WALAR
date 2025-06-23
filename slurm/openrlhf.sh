@@ -8,8 +8,8 @@
 #SBATCH --partition=taurus
 #SBATCH --account=yifengliu
 #SBATCH --mail-type=FAIL           # only send email on failure
-#SBATCH --output=/mnt/gemini/data1/yifengliu/qe-lr/stdout.txt
-#SBATCH --error=/mnt/gemini/data1/yifengliu/qe-lr/stderr.txt
+#SBATCH --output=/mnt/gemini/data1/yifengliu/logs/grpo-stdout.txt
+#SBATCH --error=/mnt/gemini/data1/yifengliu/logs/grpo-stderr.txt
 #SBATCH --overcommit
 
 # project settings
@@ -17,7 +17,7 @@ OPENRLHF_PATH="/mnt/gemini/data1/yifengliu/qe-lr/openrlhf"
 MOUNT="$OPENRLHF_PATH:/openrlhf,$HOME/.cache:/root/.cache"
 RAY_VERSION=2.12.0
 
-JOBLOG="/mnt/gemini/data1/yifengliu/qe-lr/train_ppo_llama_ray-$SLURM_JOB_ID.log"
+JOBLOG="/mnt/gemini/data1/yifengliu/logs/train_grpo_qwen_hybrid-$SLURM_JOB_ID.log"
 echo "$(date '+%Y-%m-%d %H:%M:%S') Job ${SLURM_JOB_ID} started ..." &>> ${JOBLOG}
 
 # launch ray daemon
