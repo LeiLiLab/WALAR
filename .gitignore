@@ -1,0 +1,11 @@
+data/
+
+data/train/base_en-zh-1m.parquet
+data/train/base_en-sw-1m.jsonl
+data/train/base_en-zh-1m.jsonl
+
+
+logs/
+wandb/
+__pycache__/
+*.pyc

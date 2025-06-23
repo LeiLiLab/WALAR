@@ -1,0 +1,2 @@
+/mnt/gemini/home/yifengliu/miniconda3/bin/python
+GPUs allocated: 6,7

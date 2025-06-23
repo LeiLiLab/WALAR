@@ -1,0 +1,20 @@
+#!/bin/bash
+# export CUDA_VISIBLE_DEVICES=1
+year=24
+model_name="metricX"
+model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
+dtype="bf16"  ### dtype can be discarded if your model_name is metricX
+
+cd /mnt/gemini/data1/yifengliu/qe-lr/code
+
+python evaluate_wmt.py \
+  --wmt_year ${year}\
+  --model_name ${model_name}\
+  --model_size ${model_size}\
+  --dtype ${dtype}\
+  --output_dir /mnt/data1/yifengliu/qe-lr/result/wmt${year}
+
+# CUDA_VISIBLE_DEVICES=1,3 torchrun --nproc_per_node=2 /mnt/data1/yifengliu/qe-lr/MetricX/evaluate_wmt.py \
+#   --wmt_year 24 \
+#   --model_name metricX \
+#   --output_dir /mnt/data1/yifengliu/qe-lr/result/wmt24 \
