@@ -232,10 +232,10 @@ class BasePPOTrainer(ABC):
             "tam": "Tamil",
         }
         src_lang = "eng"
-        val_lang_list = ["zho_simpl", "swh"]
+        val_lang_list = ["zho_simpl"]
         start_time = time.time()
         logger.info(f"⏰ Evaluation start time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-
+        breakpoint()
         # vLLM wakeup when vllm_enable_sleep
         if self.strategy.args.vllm_enable_sleep:
             from openrlhf.trainer.ray.vllm_engine import batch_vllm_engine_call
@@ -271,12 +271,14 @@ class BasePPOTrainer(ABC):
                 generate_kwargs["temperature"] = temperature
                 generate_kwargs["n_samples_per_prompt"] = 1
                 
-                samples_list1 = self.samples_generator.generate_samples(
-                    all_prompts, all_labels, remote_reward_model=self.remote_comet, **generate_kwargs
-                )
-                samples_list2 = self.samples_generator.generate_samples(
-                    all_prompts, all_labels, remote_reward_model=self.remote_metric_reference, **generate_kwargs
-                )
+                if self.remote_comet:
+                    samples_list1 = self.samples_generator.generate_samples(
+                        all_prompts, all_labels, remote_reward_model=self.remote_comet, **generate_kwargs
+                    )
+                if self.remote_metric_reference:
+                    samples_list2 = self.samples_generator.generate_samples(
+                        all_prompts, all_labels, remote_reward_model=self.remote_metric_reference, **generate_kwargs
+                    )
                 # experiences = self.experience_maker.make_experience(samples_list1)
                 # samples = [self.tokenizer.batch_decode(experiences[i].sequences[0].unsqueeze(0), skip_special_tokens=True)[0] for i in range(len(experiences))]
                 # samples = [sample.split(f"Translate from {lang_dict[src_lang]} to {lang_dict[tgt_lang]}:")[1].strip() for sample in samples]
@@ -293,20 +295,19 @@ class BasePPOTrainer(ABC):
                 # print(all_labels)
                 samples = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in samples]
                 bleu = get_spBLEU(samples, all_labels)
-                # Get rewards from samples, such as agent rewards or remote reward models
-                rewards_list1, rewards_list2 = [], []
-                for samples1, samples2 in zip(samples_list1, samples_list2):
-                    rewards_list1.append(samples1.rewards)
-                    rewards_list2.append(samples2.rewards)
+        
+                logs = {}
                 # Reshape rewards to (num_prompts, n_samples_per_prompt)
-                rewards1 = torch.tensor(rewards_list1).reshape(-1, n_samples_per_prompt)
-                rewards2 = torch.tensor(rewards_list2).reshape(-1, n_samples_per_prompt)
-
+                if self.remote_comet:
+                    rewards_list1 = [sample.rewards for sample in samples_list1]
+                    rewards1 = torch.tensor(rewards_list1).reshape(-1, n_samples_per_prompt)
+                    logs[f"{lang_dict[src_lang]}-{lang_dict[tgt_lang]}-comet_reward"] = rewards1.mean().item()
+                if self.remote_metric_reference:
+                    rewards_list2 = [sample.rewards for sample in samples_list2]
+                    rewards2 = torch.tensor(rewards_list2).reshape(-1, n_samples_per_prompt)
+                    logs[f"{lang_dict[src_lang]}-{lang_dict[tgt_lang]}-metric_reference_reward"] = rewards2.mean().item()
 
                 # Calculate global averages
-                logs = {}
-                logs[f"{lang_dict[src_lang]}-{lang_dict[tgt_lang]}-comet_reward"] = rewards1.mean().item()
-                logs[f"{lang_dict[src_lang]}-{lang_dict[tgt_lang]}-metric_reference_reward"] = rewards2.mean().item()
                 logs[f"{lang_dict[src_lang]}-{lang_dict[tgt_lang]}-bleu"] = bleu
                 # Log to wandb/tensorboard
                 if self._wandb is not None:
@@ -552,9 +553,9 @@ class PPOTrainer(BasePPOTrainer):
                         self.critic_model_group.async_run_method_batch(method_name="append", experience=experiences)
                     )
                 ray.get(refs)
-
+                breakpoint()
                 status = self.ppo_train(steps)
-
+                breakpoint()
                 status['reward1'] = sum(reward1_list) / len(reward1_list) if reward1_list else 0.0
                 status['reward2'] = sum(reward2_list) / len(reward2_list) if reward2_list else 0.0
                 

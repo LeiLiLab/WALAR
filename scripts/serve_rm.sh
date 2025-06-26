@@ -6,36 +6,40 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 
 src="en"
 tgt="zh"
+lang_detect=True
 
-export CUDA_VISIBLE_DEVICES=0
-python -m openrlhf.cli.serve_rm \
-    --model_name  metricX\
-    --port 5000 \
-    --max_len 1536 \
-    --src $src \
-    --tgt $tgt \
-    --batch_size 8 &
+# export CUDA_VISIBLE_DEVICES=4
+# python -m openrlhf.cli.serve_rm \
+#     --model_name  metricX\
+#     --port 5000 \
+#     --max_len 1536 \
+#     --src $src \
+#     --tgt $tgt \
+#     --lang_detect $lang_detect \
+#     --batch_size 8 &
 
-echo "QE MetricX serves successfully!"
+# echo "QE MetricX serves successfully!"
 
-export CUDA_VISIBLE_DEVICES=4
-python -m openrlhf.cli.serve_rm \
-    --model_name  metricX-ref\
-    --port 4000 \
-    --max_len 1536 \
-    --src $src \
-    --tgt $tgt \
-    --batch_size 8 &
+# export CUDA_VISIBLE_DEVICES=5
+# python -m openrlhf.cli.serve_rm \
+#     --model_name  metricX-ref\
+#     --port 4000 \
+#     --max_len 1536 \
+#     --src $src \
+#     --tgt $tgt \
+#     --lang_detect $lang_detect \
+#     --batch_size 8 &
 
-echo "Ref MetricX serves successfully!"
+# echo "Ref MetricX serves successfully!"
 
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 python -m openrlhf.cli.serve_rm \
     --model_name Comet22\
     --port 7000 \
     --max_len 1536 \
     --src $src \
     --tgt $tgt \
+    --lang_detect $lang_detect \
     --batch_size 16 &
 
 echo "COMET22 serves successfully!"
@@ -48,6 +52,7 @@ python -m openrlhf.cli.serve_rm \
     --max_len 1536 \
     --src $src \
     --tgt $tgt \
+    --lang_detect $lang_detect \
     --batch_size 16 &
 
 echo "XComet serves successfully!"

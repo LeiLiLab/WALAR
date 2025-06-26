@@ -1,7 +1,7 @@
 # ray start --head --node-ip-address 0.0.0.0 --num-gpus 4
 
 
-export CUDA_VISIBLE_DEVICES=1,2,3,4
+export CUDA_VISIBLE_DEVICES=6,7
 
 eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python

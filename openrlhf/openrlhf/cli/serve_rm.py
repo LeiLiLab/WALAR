@@ -196,11 +196,12 @@ class RewardModelProxy:
         print(f"{self.model_name}: query: {queries[0]}")
         print(f"{self.model_name}: prompt: {prompts[0]}")
         print(f"{self.model_name}: score: {scores[0]}")
-        tgts = [tgt.replace("\n", "") for tgt in tgts]
-        lang_info = self.lang_detect_model.predict(tgts)
-        min_reward = -25 if 'metricX' in self.model_name else 0
-        detect_rewards = [float('inf') if language[0].replace("__label__", "") else min_reward for language in lang_info[0]]
-        scores = [min(score, detect_reward) for score, detect_reward in zip(scores, detect_rewards)]
+        if self.args.lang_detect:
+          tgts = [tgt.replace("\n", "") for tgt in tgts]
+          lang_info = self.lang_detect_model.predict(tgts)
+          min_reward = -25 if 'metricX' in self.model_name else 0
+          detect_rewards = [float('inf') if language[0].replace("__label__", "") else min_reward for language in lang_info[0]]
+          scores = [min(score, detect_reward) for score, detect_reward in zip(scores, detect_rewards)]
         return scores
 
 
@@ -217,6 +218,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--src", type=str, default="en", help="Source language code")
     parser.add_argument("--tgt", type=str, default="zh", help="Target language code")
+    parser.add_argument("--lang_detect", type=bool, default=False, help="Enable language detection")
     # Performance
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False, help="Enable bfloat16")

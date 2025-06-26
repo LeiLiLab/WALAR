@@ -1,25 +1,25 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=3
+
 # Default values
 declare -A model_path
 
-eval "$(/mnt/gemini/data1/yifengliu/miniconda3/bin/conda shell.bash hook)"
+eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python
-source /mnt/gemini/data1/yifengliu/miniconda3/bin/activate qe-rl
+source /mnt/gemini/home/yifengliu/miniconda3/bin/activate qe-rl
 
 model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen2.5-0.5B-Instruct"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Hybrid-Qwen2.5-0.5B-en-zh-1M-bsz128/global_step200_hf"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Hybrid-Qwen2.5-0.5B-en-zh-1M-bsz128/global_step180_hf"
 
-MODEL_NAME="checkpoint"
+MODEL_NAME="Qwen"
 MODEL_PATH=${model_path[$MODEL_NAME]}
 # zho_simpl, zho_trad, swh, tam
 LANG_PAIR="eng-zho_simpl"
-INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev"
+INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest"
 OUTPUT_DIR="/mnt/gemini/data1/yifengliu/qe-lr/output/flores"
-PORT=1567
+PORT=1234
 
 
-server=False
+server=True
 
 if [ "$server" = True ]; then
     python3 -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT}

@@ -49,7 +49,7 @@ class EvaluationArguments:
 
 def my_load_dataset(data_pair, lang):
     dataset = []
-    path = os.path.join(data_pair, f"{lang}.dev")
+    path = os.path.join(data_pair, f"{lang}.devtest")
     with open(path, 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -100,6 +100,7 @@ def predict(model_name_or_path, url, dataset, lang_pair):
             n=1,
         )
         responses.append(response.choices[0].message.content)
+        import code; code.interact(local=locals())
     return responses
 
 
@@ -110,6 +111,7 @@ def calculate_metrics(references, predictions):
 
 def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/gemini/data1/yifengliu/model/models--Unbabel--wmt22-comet-da/snapshots/2760a223ac957f30acfb18c8aa649b01cf1d75f2/checkpoints/model.ckpt"):
     """Calculate COMET score."""
+    # model_path = "/mnt/gemini/data1/yifengliu/model/models--Unbabel--XCOMET-XL/snapshots/6a123c5e8e6dccab25e5fcffa3c8b417abadb462/checkpoints/model.ckpt"
     model = load_from_checkpoint(model_path)
     
     # Prepare inputs for COMET

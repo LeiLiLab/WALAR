@@ -324,7 +324,7 @@ def main() -> None:
   model.eval()
   ds, name = preprocess_dataset(args.input_file)
   # ds = [{"source": "On Monday, scientists from the Stanford University School of Medicine announced the invention of a new diagnostic tool that can sort cells by type: a tiny printable chip that can be manufactured using standard inkjet printers for possibly about one U.S. cent each.",
-        #  "hypothesis": "On Monday, scientists from the Stanford University School of Medicine announced the development of a new diagnostic tool. This tool can identify cells based on their type. It is a tiny, printable chip that can be produced using standard inkjet printers. The cost of this tool is approximately one U.S. cent each."}]
+  #        "hypothesis": "On Monday, scientists from the Stanford University School of Medicine announced the development of a new diagnostic tool. This tool can identify cells based on their type. It is a tiny, printable chip that can be produced using standard inkjet printers. The cost of this tool is approximately one U.S. cent each."}]
   ds = datasets.Dataset.from_list(ds)
   ds, data_collator = get_dataset(
       ds,

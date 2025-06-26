@@ -1,6 +1,8 @@
 import json
 import random
 import pandas as pd
+from transforemers import AutoTokenizer
+from vLLM import LLM, SamplingParams
 
 def load_dastset(file_path):
     """Load dataset from a JSONL file."""
@@ -20,9 +22,17 @@ if __name__ == "__main__":
     # Load the language ID model
     model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
 
-    # Detect language
-    sentence = ["你好，marry,john", "Bye bye, see you next time", "Bonjour le monde!"]
-    prediction = model.predict(sentence)
+    src = "Hello, how are you?"
+    model_path = "/mnt/gemini/data1/yifengliu/model/Qwen2.5-0.5B-Instruct"
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    model = LLM(model_path)
+    samples = SamplingParams(n=1, temperature=0.0)
+    message = [
+        {'user': src}
+    ]
+    prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
+    output = model.generate(prompt, samples=samples)
+    # prediction = model.predict(sentence)
     import code; code.interact(local=locals())
     language_code = prediction[0][0].replace("__label__", "")  # e.g., 'fr'
     confidence = prediction[1][0]

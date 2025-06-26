@@ -4,12 +4,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32GB                    # all mem avail
-#SBATCH --gpus=2
-#SBATCH --partition=taurus
+#SBATCH --gpus=6
+#SBATCH --partition=gemini
 #SBATCH --account=yifengliu
 #SBATCH --mail-type=FAIL           # only send email on failure
-#SBATCH --output=/mnt/gemini/data1/yifengliu/logs/grpo-stdout.txt
-#SBATCH --error=/mnt/gemini/data1/yifengliu/logs/grpo-stderr.txt
+#SBATCH --output=/mnt/gemini/data1/yifengliu/logs/grpo-stdout2.txt
+#SBATCH --error=/mnt/gemini/data1/yifengliu/logs/grpo-stderr2.txt
 #SBATCH --overcommit
 
 # project settings
