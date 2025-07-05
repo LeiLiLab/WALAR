@@ -1,5 +1,6 @@
 data/
 output/
+config/
 
 data/train/base_en-zh-1m.parquet
 data/train/base_en-sw-1m.jsonl
