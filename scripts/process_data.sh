@@ -1,7 +1,7 @@
 src="en"
-tgt="ru" # all you need to care
+tgt="fi" # all you need to care
 
-model_path=/mnt/gemini/data1/yifengliu/model/Qwen2.5-0.5B-Instruct #set your model path
+model_path=/mnt/gemini/data1/yifengliu/model/Qwen2.5-3B-Instruct #set your model path
 template_type=base
 type=openrlhf
 if [ ${type} == "openrlhf" ]; then

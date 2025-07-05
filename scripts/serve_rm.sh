@@ -5,7 +5,7 @@ source /mnt/gemini/data1/yifengliu/miniconda3/bin/activate qe-rl
 cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 
 src="en"
-tgt="ru"
+tgt="fi"
 lang_detect=True
 rule=True
 
@@ -34,7 +34,7 @@ echo "MetricX serves successfully!"
 
 # echo "Ref MetricX serves successfully!"
 
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=1
 python -m openrlhf.cli.serve_rm \
     --model_name Comet22\
     --port 4000 \

@@ -16,6 +16,7 @@ language_map = {
     'sw': 'Swahili',
     'ta': 'Tamil',
     "ru": "Russian",
+    "fi": 'Finnish',
 }
 
 def make_prompt(source, src, tgt, template_type='chat', tokenizer=None):
@@ -115,7 +116,7 @@ def main():
     print(train_pdf['prompt'][0])
     
     print(f"Train dataset saved to: {args.output_file}")
-
+    import code; code.interact(local=locals())
 
 if __name__ == '__main__':
     main()

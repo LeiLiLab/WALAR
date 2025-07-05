@@ -324,12 +324,16 @@ def main() -> None:
     model.to(device)
   model.eval()
   ds, name = preprocess_dataset(args.input_file)
-  ds = [{"source": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
-         "hypothesis": "“现在我们已经培育出4个月大的小鼠，这些小鼠都是无糖尿病的，而以前的实验中，这些小鼠都患有糖尿病。”他进一步解释道。"}]
+  # ds = [{"source": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
+  #        "hypothesis": "“现在我们已经培育出4个月大的小鼠，这些小鼠都是无糖尿病的，而以前的实验中，这些小鼠都患有糖尿病。”他进一步解释道。"}]
   # ds = [{"source": "On Monday, scientists from the Stanford University School of Medicine announced the invention of a new diagnostic tool that can sort cells by type: a tiny printable chip that can be manufactured using standard inkjet printers for possibly about one U.S. cent each.",
   #        "hypothesis": "On Monday, scientists from the Stanford University School of Medicine announced the invention of a new diagnostic tool that can sort cells by type: a tiny printable chip that can be manufactured using standard inkjet printers for possibly about one U.S. cent each.",}]
   # ds = [{"source": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.", 
   #        "hypothesis": "他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”"}]
+  ds = [
+    {"source": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal",
+     "hypothesis": "Dr. Tony Moll在南非KwaZulu-Natal地区发现了一种非常难治疗的结核病类型--Extremely Drug Resistant Tuberculosis (XDR-TB)。这种病菌对大多数常规抗生素治疗无效，需要使用特定的抗结核药物进行治疗。"}
+  ]
   ds = datasets.Dataset.from_list(ds)
   ds, data_collator = get_dataset(
       ds,

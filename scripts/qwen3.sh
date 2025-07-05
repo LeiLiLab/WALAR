@@ -1,5 +1,5 @@
 #!/bin/bash
-# export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 # Default values
 declare -A model_path
 
@@ -7,15 +7,14 @@ eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python
 source /mnt/gemini/home/yifengliu/miniconda3/bin/activate qe-rl
 
-model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-MetricX-Qwen2.5-3B-en-fi-1M-bsz128/global_step240_hf"
+model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-235B-A22B-GPTQ-Int4"
 
 # /mnt/gemini/data1/yifengliu/checkpoints/Qwen2.5-0.5B-En-Zh-1M-bsz128/global_step140_hf
 # /mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-MetricX-Qwen2.5-3B-en-zh-1M-bsz128/global_step120_hf
 # /mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-MetricX-Qwen2.5-3B-en-ru-1M-bsz128/global_step120_hf
 # /mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-MetricX-Qwen2.5-3B-en-zh-1M-bsz128/global_step120_hf
 
-MODEL_NAME="checkpoint"
+MODEL_NAME="Qwen"
 MODEL_PATH=${model_path[$MODEL_NAME]}
 # zho_simpl, zho_trad, swh, tam, fra, rus
 # spa(Spanish), deu(German)， heb(Hebrew)
@@ -26,26 +25,22 @@ MODEL_PATH=${model_path[$MODEL_NAME]}
 # ara(Arabic)
 # tur(Turkish)
 # LANG_PAIR="zho_simpl-deu"
-INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev"
-PORT=7777
+INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest"
+PORT=6667
 MAX_TOKENS=512
 source_language="eng"
 target_language_list=(
-    # "zho_simpl"
+    "zho_simpl"
     # "fra"
-    # "deu"
-    # "jpn"
-    # "spa"
-    # "rus"
+    "deu"
+    "jpn"
+    "spa"
+    "rus"
     "fin"
-    # "ara"
-    # "tur"
-    # "ben"
-    # "hin"
-    # "swh"
-    # "tam"
+    "ara"
+    "tur"
 )
-server=False
+server=True
 # 1234
 
 if [ $MODEL_NAME == "Qwen" ]; then
@@ -57,8 +52,8 @@ OUTPUT_DIR="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/${relative_path}"
 
 
 if [ "$server" = True ]; then
-    python3 -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT}
-    # python -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT} --chat-template /mnt/gemini/data1/yifengliu/qe-lr/config/qwen3_nonthinking.jinja
+    # python3 -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT}
+    python -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT} --chat-template /mnt/gemini/data1/yifengliu/qe-lr/config/qwen3_nonthinking.jinja --tp 8
 else
     # Create output directory if it doesn't exist
     mkdir -p "$OUTPUT_DIR"

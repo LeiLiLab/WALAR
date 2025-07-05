@@ -236,6 +236,7 @@ class BasePPOTrainer(ABC):
             "ta": "tam",
             "fr": "fra",
             "bn": "bng",
+            "fi": "fin",
         }
         lang_dict = {
             'eng': "English",
@@ -244,6 +245,7 @@ class BasePPOTrainer(ABC):
             "tam": "Tamil",
             "fra": "French",
             "bng": "Bengali",
+            "fin": "Finnish",
         }
         src_lang = two2three[self.src]
         val_lang_list = [two2three[self.tgt]]

@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import re
 
 sys.path.insert(0, "/mnt/gemini/data1/yifengliu/qe-lr/code")
 import models
@@ -25,6 +26,7 @@ lang_dict = {
   "zh": "Chinese",
   "sw": "Swahili",
   "ru": "Russian",
+  "fi": "Finnish",
 }
 
 
@@ -170,8 +172,15 @@ class RewardModelProxy:
         if "metricX" in self.model_name:
           with torch.no_grad():
               ds = []
-              srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
-              tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
+              src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
+              srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(src_pattern, q)]
+
+              # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
+              tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
+              tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(tgt_pattern, q)]
+              # srcs = [match.group(1).strip() for query in queries if (match := pattern.search(query))]
+              # srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
+              # tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
               # srcs = [query.split('user\n', 1)[1].split("Translate from English to Chinese", 1)[0].strip() for query in queries]
               # tgts = [query.split('Translate from English to Chinese:\nassistant\n', 1)[1] for query in queries]
               for src, tgt, label in zip(srcs, tgts, labels):
@@ -187,8 +196,14 @@ class RewardModelProxy:
               scores.extend(-predictions)
         elif 'Comet' in self.model_name:
           ds = []
-          srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
-          tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
+          src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
+          srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(src_pattern, q)]
+
+          # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
+          tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
+          tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(tgt_pattern, q)]
+          # srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
+          # tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
           inputs = [{"src": src, "mt": mt, "ref": ref} for src, mt, ref in zip(srcs, tgts, labels)]
     
           output = self.model.predict(inputs, batch_size=8, gpus=1)
@@ -213,17 +228,25 @@ class RewardModelProxy:
           extra_logs['rule_penalty_percent'] = cnt / len(tgts)
         
         if self.args.lang_detect:
-          tgts = [tgt.replace("\n", "") for tgt in tgts]
+          pattern = r"Translate from English to ([^\n<]+)"
+          target_languages = [re.search(pattern, query).group(1).strip() for query in queries if re.search(pattern, query)]
+          # tgts = [tgt.replace("\n", "") for tgt in tgts]
           lang_info = self.lang_detect_model.predict(tgts)
           min_reward = -25 if 'metricX' in self.model_name else 0
           detect_rewards = []
           cnt = 0
-          for language in lang_info[0]:
-            if language[0].replace("__label__", "") == self.tgt:
+          for language, tgt in zip(lang_info[0], target_languages):
+            if language.replace("__label__", "") == tgt:
               detect_rewards.append(float('inf'))
             else:
               cnt += 1
               detect_rewards.append(min_reward)
+          # for language in lang_info[0]:
+          #   if language[0].replace("__label__", "") == self.tgt:
+          #     detect_rewards.append(float('inf'))
+          #   else:
+          #     cnt += 1
+          #     detect_rewards.append(min_reward)
           scores = [min(score, detect_reward) for score, detect_reward in zip(scores, detect_rewards)]
           logger.info(lang_info[0][:20])
           extra_logs['lang_penalty_percent'] = cnt / len(tgts)

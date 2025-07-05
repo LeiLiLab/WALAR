@@ -13,7 +13,7 @@ export RAY_DEBUG_POST_MORTEM=1
 wandb_token=5bebcc325992863eb55622d9ad2e7c85c95a1f115
 
 src="en"
-tgt="ru"
+tgt="fi"
 size="3B"
 lang_detect=True
 reward_name="Rule-Detect-MetricX"
@@ -69,7 +69,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --flash_attn \
     --gradient_checkpointing \
     --temperature 1 \
-    --save_steps 10 \
+    --save_steps 20 \
     --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-Qwen2.5-${size}-${src}-${tgt}-1M-bsz128 \
     --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-Qwen2.5-${size}-${src}-${tgt}-1M-bsz128 \
     --load_checkpoint \

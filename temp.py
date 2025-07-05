@@ -12,9 +12,13 @@ def load_dastset(file_path):
 
 if __name__ == "__main__":
     # Example usage
-    # file_path = "/mnt/gemini/data1/yifengliu/qe-lr/result/wmt24/XComet-xl/seg/cs-uk.jsonl"
-    # dataset = load_dastset(file_path)
-    
+    path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Rule-Detect-MetricX-Qwen2.5-0.5B-en-zh-1M-bsz128/global_step120_hf/eng-zho_simpl.txt"
+    dataset = []
+    with open(path, 'r') as f:
+        lines = f.readlines()
+        for line in lines[:-2]:
+            dataset.append(json.loads(line.strip()))
+    import code; code.interact(local=locals())
     # import fasttext
     # lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
     

@@ -48,9 +48,10 @@ class EvaluationArguments:
     )
 
 
-def my_load_dataset(data_pair, lang):
+def my_load_dataset(data_dir, lang):
     dataset = []
-    path = os.path.join(data_pair, f"{lang}.devtest")
+    val_or_test = data_dir.split("/")[-1]
+    path = os.path.join(data_dir, f"{lang}.{val_or_test}")
     with open(path, 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -94,6 +95,8 @@ def predict(model_name_or_path, url, dataset, lang_pair, max_tokens):
         "jpn": "Japanese",
         "tgl": "Filipino (Tagalog)",
         "fin": "Finnish",
+        "ara": "Arabic",
+        "tur": "Turkish",
     }
     src_lang, tgt_lang = lang_dict[src_lang], lang_dict[tgt_lang]
     client = openai.Client(base_url=url, api_key="None")
@@ -146,6 +149,7 @@ def main():
     )
     print("=====================================")
     print(f"args.model_name_or_path: {args.model_name_or_path}")
+    print(f"Port: {args.port}")
     print(f"Results for {args.lang_pair}:")
     print(f"spBLEU: {metrics:.4f}")
     print(f"COMET Score: {comet_score['mean_score']:.4f}")
@@ -153,7 +157,7 @@ def main():
     print(f"source: {sources[0]}")
     print(f"prediction: {predictions[0]}")
     print(f"reference: {references[0]}")
-    import code; code.interact(local=locals())
+    # import code; code.interact(local=locals())
 
     dirname = os.path.dirname(args.output_file) if args.output_file else None
     if dirname and not os.path.exists(dirname):
