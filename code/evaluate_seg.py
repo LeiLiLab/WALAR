@@ -56,7 +56,7 @@ def _convert_to_matrices(
     # MTME requires that missing scores must be None, not NaN.
     metric_scores = np.full((num_rows, num_cols), None, dtype=np.dtype(object))
     human_scores = np.full((num_rows, num_cols), None, dtype=np.dtype(object))
-    import code; code.interact(local=locals())
+    # import code; code.interact(local=locals())
     for instance in instances:
       system_id = instance["system_id"]
       segment_id = instance["segment_id"]
@@ -70,7 +70,7 @@ def _convert_to_matrices(
 
 def preprocess_dataset(input_file: str) -> list[dict[str, Any]]:
     instances = []
-    if 'IndicMT' in input_file:
+    if 'IndicMT' or 'temp' in input_file:
       with open(input_file, "r") as f:
           lines = f.readlines()
           for line in lines:
@@ -119,7 +119,7 @@ def main() -> None:
     metric_seg_scores = metric_seg_scores.astype(np.float32)
     
     human_seg_scores = human_seg_scores.astype(np.float32)
-    
+    # import code; code.interact(local=locals())
     seg_no_grouping_pearson, _ = scipy.stats.pearsonr(
         metric_seg_scores.reshape(-1)[mask],
         human_seg_scores.reshape(-1)[mask],

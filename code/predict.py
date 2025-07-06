@@ -303,8 +303,7 @@ def write_to_file(output_file, ds, predictions, model_name):
         del example["input_ids"]
         del example["attention_mask"]
       out.write(json.dumps(example) + "\n")
-      
-      
+           
 def main() -> None:
   parser = transformers.HfArgumentParser(Arguments)
   (args,) = parser.parse_args_into_dataclasses()
@@ -355,7 +354,7 @@ def main() -> None:
   #     dirname,
   #     f"{args.src}-{args.tgt}.jsonl",
   # )
-  # # write_to_file(output_file, ds, predictions, args.model_name)
+  # write_to_file(output_file, ds, predictions, args.model_name)
 
 
 if __name__ == "__main__":

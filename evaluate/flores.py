@@ -60,7 +60,6 @@ def get_spBLEU(hyps, refs):
     result = sacrebleu.corpus_bleu(hyps, [refs], tokenize="spm", force=True).score
     return result
 
-
 def load_flores_dataset(data_dir, lang_pair):
     """Load FLORES-101 dataset for a specific language pair."""
     # dataset = load_dataset("facebook/flores", "all")
@@ -80,6 +79,7 @@ def predict(model, tokenizer, dataset, sampling_params, lang_pair):
         "zho_simpl": "Chinese",
         'swh': "Swahili",
         "tam": "Tamil",
+        "asm": "Assamese",
     }
     src_lang, tgt_lang = lang_dict[src_lang], lang_dict[tgt_lang]
     prompts = []
@@ -89,7 +89,7 @@ def predict(model, tokenizer, dataset, sampling_params, lang_pair):
         message = [
             {"role": "user", "content": prompt},
         ]
-        new_prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
+        new_prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=False)
         prompts.append(new_prompt)
     responses = model.generate(prompts, sampling_params=sampling_params)
     responses = [response.outputs[0].text for response in responses]

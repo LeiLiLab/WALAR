@@ -1,2 +1,194 @@
+import json
+import csv
 import transformers
+from transformers import AutoTokenizer
+import argparse
+import datasets
+import openai
+import os
+from mqm_utils import TEMPLATE_GEMBA_MQM, apply_template, parse_mqm_answer, TEMPLATE_GEMBA_ESA_ERROR_SPANS, TEMPLATE_GEMBA_ESA_RANKING, validate_number
 
+from vllm import LLM, SamplingParams
+from collections import defaultdict
+from datasets import load_dataset
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict
+
+lang_dict = {
+    'eng': "English",
+    "zho_simpl": "Chinese",
+    'swh': "Swahili",
+    "tam": "Tamil",
+    "fra": 'French',
+    "deu": "German",
+    "spa": "Spanish",
+    "ben": "Bengali",
+    "hin": "Hindi",
+    "jpn": "Japanese",
+    "tgl": "Filipino (Tagalog)",
+    "fin": "Finnish",
+    "ara": "Arabic",
+    "tur": "Turkish",
+    ### Indo-European-Slavic
+    "bel": "Belarusian",
+    "bos": "Bosnian",
+    "bul": "Bulgarian",
+    "hrv": "Croatian",
+    "ces": "Czech",
+    "mkd": "Macedonian",
+    "pol": "Polish",
+    "rus": "Russian",
+    "srp": "Serbian",
+    "slk": "Slovak",
+    "sva": "Slovenian",
+    "ukr": "Ukrainian",
+}
+
+@dataclass
+class EvaluationArguments:
+    """
+    Arguments for model evaluation.
+    """
+    model_name_or_path: str = field(
+        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    )
+    eval_type: str = field(
+        default="mqm",
+        metadata={"help": "Type of evaluation to perform (e.g., mqm, esa_error_spans, esa_ranking)"}
+    )
+    input_file: str = field(
+        default="/dev/null",
+        metadata={"help": "Directory containing FLORES-101 dataset"}
+    )
+    output_dir: Optional[str] = field(
+        default=None,
+        metadata={"help": "Path to save evaluation results"}
+    )
+    tensor_parallel_size: int = field(
+        default=1,
+        metadata={"help": "Number of GPUs to use for tensor parallelism"}
+    )
+    max_tokens: int = field(
+        default=512,
+        metadata={"help": "Maximum number of tokens to generate"}
+    )
+
+def my_load_dataset(path):
+    dataset = []
+    with open(path, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            dataset.append(json.loads(line.strip()))
+    return dataset
+
+def preprocess_dataset(path):
+  # Load with my own function because of potential error when loading low-resource languages
+  name = ''
+  if 'IndicMT' in path:
+    name = 'IndicMT'
+    ds = my_load_dataset(path)
+    for data in ds:
+      data['source'] = data.pop('src')
+      data['hypothesis'] = data.pop('translation')
+      data['reference'] = data.pop('ref')
+  elif 'wmt' in path:
+    name = 'wmt'
+    with open(path, newline='') as f:
+      reader = csv.DictReader(f, delimiter='\t')
+      ds = []
+      for row in reader:
+        row['hypothesis'] = row.pop('target')
+        ds.append(row)
+  elif 'afriMTE' in path:
+    name = 'afriMTE'
+    ds = my_load_dataset(path)
+    for data in ds:
+      data['source'] = data.pop('src')
+      data['hypothesis'] = data.pop('hypothesis')
+      data['reference'] = data.pop('reference')
+  else:
+    raise ValueError(f"Unsupported dataset: {path}")
+  return ds, name
+
+def write_to_file(output_file, ds, predictions):
+  with open(output_file, "w") as out:
+    for pred, example in zip(predictions, ds):
+      example["prediction"] = float(pred) if pred is not None else pred
+      out.write(json.dumps(example) + "\n")
+
+def get_scores(eval_type: str, ds: List[Dict], sampling_params: SamplingParams, model: LLM, tokenizer: AutoTokenizer=None):
+    # source_lang, source_seg, target_lang, target_seg
+    prompts = []
+    for data in ds:
+        temp_data = {
+            'source_lang': data['src_lang'],
+            'target_lang': data['tgt_lang'],
+            'source_seg': data['source'],
+            'target_seg': data['hypothesis'],
+        }        
+        if eval_type == "mqm":
+            prompt = apply_template(TEMPLATE_GEMBA_MQM, temp_data)
+        elif eval_type == "esa":
+            prompt = apply_template(TEMPLATE_GEMBA_ESA_ERROR_SPANS, temp_data)
+        
+        prompt = tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        prompts.append(prompt)
+            
+    outputs = model.generate(prompts, sampling_params=sampling_params)
+    # outputs = model.chat(
+    #     prompts, 
+    #     sampling_params,
+    #     chat_template_kwargs={"enable_thinking": False},  # Set to False to strictly disable thinking
+    # )
+    outputs1 = [output.outputs[0].text for output in outputs]
+    import code; code.interact(local=locals())
+    if eval_type == "mqm":
+        scores = [parse_mqm_answer(output) for output in outputs1]
+    elif eval_type == "esa":
+        print("Evaluating ESA Error Spans...")
+        prompts = []
+        for data, error_span in zip(ds, outputs1):
+            temp_data = {
+                'source_lang':  data['src_lang'],
+                'target_lang':  data['tgt_lang'],
+                'source_seg':   data['source'],
+                'target_seg':   data['hypothesis'],
+                "error_spans":  error_span,
+            }
+            prompt = apply_template(TEMPLATE_GEMBA_ESA_RANKING, temp_data)
+            prompt = [{"role": "user", "content": prompt}]
+            prompt = tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+            prompts.append(prompt)
+        outputs = model.generate(prompts, sampling_params=sampling_params)
+        outputs = [output.outputs[0].text for output in outputs]
+        scores  = [validate_number(output) for output in outputs]
+        import code; code.interact(local=locals())
+    return scores
+
+def main():
+    parser = transformers.HfArgumentParser(EvaluationArguments)
+    args = parser.parse_args_into_dataclasses()[0]
+    print(f"Evaluating model {args.model_name_or_path}...")
+    ds, name = preprocess_dataset(args.input_file)
+    # ds = ds[:100]
+    ds = datasets.Dataset.from_list(ds)
+    # ds structure: source, hypothesis, reference
+    sampling_params = SamplingParams(temperature=0.6, top_p=0.95, top_k=20, max_tokens=args.max_tokens)
+    model = LLM(model=args.model_name_or_path, tensor_parallel_size=args.tensor_parallel_size, enforce_eager=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, trust_remote_code=True)
+    scores = get_scores(args.eval_type, ds, sampling_params, model, tokenizer)
+    dirname = args.output_dir
+    dirname = os.path.join(dirname, args.model_name_or_path.split("/")[-1])
+    
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+
+    output_file = os.path.join(
+        dirname,
+        f"{args.input_file.split('/')[-1]}",
+    )
+    write_to_file(output_file, ds, scores)
+    
+
+if __name__ == "__main__":
+    main()
