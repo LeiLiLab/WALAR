@@ -4,5 +4,5 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/code
 
 
 python evaluate_seg.py \
-  --input_file /mnt/gemini/data1/yifengliu/qe-lr/output/temp/Qwen3-32B/punjabi2.jsonl\
+  --input_file /mnt/gemini/data1/yifengliu/qe-lr/output/temp/Qwen3-32B/maithili2.jsonl\
   --output_file /mnt/data1/yifengliu/qe-lr/output/temp.jsonl

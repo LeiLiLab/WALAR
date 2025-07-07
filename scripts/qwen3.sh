@@ -18,7 +18,7 @@ model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-32B"
 
 MODEL_NAME="Qwen"
 MAX_TOKENS=2048
-EVAL_TYPE="mqm"
+EVAL_TYPE="esa"
 MODEL_PATH=${model_path[$MODEL_NAME]}
 # zho_simpl, zho_trad, swh, tam, fra, rus
 # spa(Spanish), deu(German)， heb(Hebrew)
@@ -30,7 +30,7 @@ MODEL_PATH=${model_path[$MODEL_NAME]}
 # tur(Turkish)
 # LANG_PAIR="zho_simpl-deu"
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
-INPUT_FILE="/mnt/gemini/data1/yifengliu/data/IndicMT/collated/punjabi2.jsonl"
+INPUT_FILE="/mnt/gemini/data1/yifengliu/data/IndicMT/collated/maithili2.jsonl"
 server=True
 # 1234
 

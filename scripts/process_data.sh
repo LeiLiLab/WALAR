@@ -1,5 +1,5 @@
 src="en"
-tgt="fi" # all you need to care
+tgt="ja" # all you need to care
 
 model_path=/mnt/gemini/data1/yifengliu/model/Qwen2.5-3B-Instruct #set your model path
 template_type=base

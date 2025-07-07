@@ -27,6 +27,15 @@ lang_dict = {
   "sw": "Swahili",
   "ru": "Russian",
   "fi": "Finnish",
+  "hi": "Hindi",
+  "de": 'German',
+  "es": 'Spanish',
+  "hi": 'Hindi',
+  "ms": 'Malay',
+  "ar": 'Arabic',
+  "tr": 'Turkish',
+  "ta": 'Tamil',
+  "ja": 'Japanese',
 }
 
 
@@ -122,8 +131,6 @@ def get_dataset(
 class RewardModelProxy:
     def __init__(self, args):
         self.args = args
-        self.src = args.src
-        self.tgt = args.tgt
         self.lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
         if 'metricX' in args.model_name:
             self.model_name = args.model_name
@@ -173,16 +180,21 @@ class RewardModelProxy:
           with torch.no_grad():
               ds = []
               src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
-              srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(src_pattern, q)]
+              srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
 
               # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
-              tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
-              tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(tgt_pattern, q)]
+              # tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>(.*?)<\|im_end\|>"
+              tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
+              tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in queries]
               # srcs = [match.group(1).strip() for query in queries if (match := pattern.search(query))]
               # srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
               # tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
               # srcs = [query.split('user\n', 1)[1].split("Translate from English to Chinese", 1)[0].strip() for query in queries]
               # tgts = [query.split('Translate from English to Chinese:\nassistant\n', 1)[1] for query in queries]
+              print(f"queries[0]: {queries[0]}")
+              print(f"tgts[0]: {tgts[0]}")
+              # print(f"src[0]: {srcs[0]}")
+              # print(f"tgt[0]: {tgts[0]}")
               for src, tgt, label in zip(srcs, tgts, labels):
                   ds.append({"source": src, "hypothesis": tgt, 'reference': label})
               ds = datasets.Dataset.from_list(ds)
@@ -197,11 +209,12 @@ class RewardModelProxy:
         elif 'Comet' in self.model_name:
           ds = []
           src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
-          srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(src_pattern, q)]
+          srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
 
           # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
-          tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
-          tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries if re.search(tgt_pattern, q)]
+          # tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>(.*?)<\|im_end\|>"
+          tgt_pattern = r"<\|im_start\|>assistant\s*<think>(.*?)</think>\s*(.*?)<\|im_end\|>"
+          tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in queries]
           # srcs = [query.split('<|im_start|>user\n', 1)[1].split(f"Translate from {lang_dict[self.src]} to {lang_dict[self.tgt]}", 1)[0].strip() for query in queries]
           # tgts = [query.split('<|im_start|>assistant\n', 1)[1].split("<|im_end|>", 1)[0].strip() for query in queries]
           inputs = [{"src": src, "mt": mt, "ref": ref} for src, mt, ref in zip(srcs, tgts, labels)]
@@ -219,6 +232,7 @@ class RewardModelProxy:
           new_scores = []
           cnt = 0
           for score, tgt in zip(scores, tgts):
+            print(tgt, '\n' in tgt)
             if "\n" in tgt:
               cnt += 1
               new_scores.append(min_reward)
@@ -228,15 +242,18 @@ class RewardModelProxy:
           extra_logs['rule_penalty_percent'] = cnt / len(tgts)
         
         if self.args.lang_detect:
-          pattern = r"Translate from English to ([^\n<]+)"
+          pattern = r"Translate from English to ([^\n<]+):"
           target_languages = [re.search(pattern, query).group(1).strip() for query in queries if re.search(pattern, query)]
-          # tgts = [tgt.replace("\n", "") for tgt in tgts]
+          tgts = [tgt.replace("\n", "") for tgt in tgts]
           lang_info = self.lang_detect_model.predict(tgts)
           min_reward = -25 if 'metricX' in self.model_name else 0
           detect_rewards = []
           cnt = 0
           for language, tgt in zip(lang_info[0], target_languages):
-            if language.replace("__label__", "") == tgt:
+            lang_code = language[0].replace("__label__", "")
+            pred_lang = lang_dict.get(lang_code, "")
+            print(language, tgt, pred_lang, pred_lang == tgt)
+            if pred_lang == tgt:
               detect_rewards.append(float('inf'))
             else:
               cnt += 1
@@ -264,8 +281,6 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=5000, help="Port number for the server")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="IP for the server")
 
-    parser.add_argument("--src", type=str, default="en", help="Source language code")
-    parser.add_argument("--tgt", type=str, default="zh", help="Target language code")
     parser.add_argument("--lang_detect", type=bool, default=False, help="Enable language detection")
     parser.add_argument("--rule", type=bool, default=False, help="Rule to use \\n as a reward or not")
     # Performance

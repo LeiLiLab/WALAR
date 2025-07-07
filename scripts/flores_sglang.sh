@@ -26,7 +26,7 @@ MODEL_PATH=${model_path[$MODEL_NAME]}
 # ara(Arabic)
 # tur(Turkish)
 # LANG_PAIR="zho_simpl-deu"
-INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev"
+INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest"
 PORT=5555
 MAX_TOKENS=512
 source_language="eng"
@@ -69,8 +69,8 @@ OUTPUT_DIR="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/${relative_path}"
 
 
 if [ "$server" = True ]; then
-    python3 -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT}
-    # python -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT} --chat-template /mnt/gemini/data1/yifengliu/qe-lr/config/qwen3_nonthinking.jinja
+    # python3 -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT}
+    python -m sglang.launch_server --model-path ${MODEL_PATH} --host 0.0.0.0 --port ${PORT} --chat-template /mnt/gemini/data1/yifengliu/qe-lr/config/qwen3_nonthinking.jinja
 else
     # Create output directory if it doesn't exist
     mkdir -p "$OUTPUT_DIR"

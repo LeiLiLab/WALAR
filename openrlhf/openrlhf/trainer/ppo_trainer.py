@@ -520,6 +520,7 @@ class PPOTrainer(BasePPOTrainer):
             number_of_samples = 0
             for _, rand_prompts, labels in self.prompts_dataloader:
                 print(f"len(rand_prompts): {len(rand_prompts)}, len(labels): {len(labels)}")
+                print(f"rand_prompts: {rand_prompts[0]}")
                 remote_reward_model = self.remote_reward_model
                 rollout_samples = self.samples_generator.generate_samples(
                     rand_prompts, labels, remote_reward_model=remote_reward_model, remote_reward_model2=self.remote_reward_model2, **self.generate_kwargs

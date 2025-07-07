@@ -141,7 +141,7 @@ def get_scores(eval_type: str, ds: List[Dict], sampling_params: SamplingParams, 
     #     chat_template_kwargs={"enable_thinking": False},  # Set to False to strictly disable thinking
     # )
     outputs1 = [output.outputs[0].text for output in outputs]
-    import code; code.interact(local=locals())
+    # import code; code.interact(local=locals())
     if eval_type == "mqm":
         scores = [parse_mqm_answer(output) for output in outputs1]
     elif eval_type == "esa":

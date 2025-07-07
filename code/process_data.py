@@ -17,15 +17,23 @@ language_map = {
     'ta': 'Tamil',
     "ru": "Russian",
     "fi": 'Finnish',
+    "de": 'German',
+    "es": 'Spanish',
+    "ru": 'Russian',
+    "hi": 'Hindi',
+    "ms": 'Malay',
+    "ar": 'Arabic',
+    "tr": 'Turkish',
+    "ja": 'Japanese',
 }
 
 def make_prompt(source, src, tgt, template_type='chat', tokenizer=None):
     if template_type == 'base':
-        return f"{source}\nTranslate from {language_map.get(src, 'English')} to {language_map.get(tgt, 'Chinese')}:"
+        return f"{source}\nTranslate from {language_map[src]} to {language_map[tgt]}:"
     elif template_type == 'chat':
-        return f"You are a helpful assistant. Translate this text from {language_map.get(src, 'English')} to {language_map.get(tgt, 'Chinese')}:\n{source}"
+        return f"You are a helpful assistant. Translate this text from {language_map[src]} to {language_map[tgt]}:\n{source}"
     elif template_type == 'rl':
-        return f"Translate this text from {language_map.get(src, 'English')} to {language_map.get(tgt, 'Chinese')}:\n{source}"
+        return f"Translate this text from {language_map[src]} to {language_map[tgt]}:\n{source}"
     else:
         raise ValueError(f"Unknown template type: {template_type}")
 
