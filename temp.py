@@ -40,6 +40,17 @@ def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/g
 if __name__ == "__main__":
     # Example usage
     dataset = []
+    path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/base_en-de2-1m.jsonl"
+    save_path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/base_en-de2-1m.jsonl"
+    dataset = load_dataset(save_path)
+    # new_dataset = []
+    # for data in dataset:
+    #     for dt in data:
+    #         dt['label_key'] = dt.pop('ref')
+    #         new_dataset.append(dt)
+    # with open(save_path, 'w') as f:
+    #     for data in new_dataset:
+    #         f.write(json.dumps(data) + "\n")
     # path = f"/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Rule-Detect-MetricX-Qwen2.5-0.5B-en-zh-1M-bsz128/global_step780_hf/eng-zho_simpl.txt"
     
     # tgt_list = ["zho_simpl", "ara", "deu", "spa", "fin", "jpn", "rus"]

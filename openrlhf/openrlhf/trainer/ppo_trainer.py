@@ -231,6 +231,7 @@ class BasePPOTrainer(ABC):
         import sacrebleu
         two2three = {
             "en": "eng",
+            "de": "deu",
             "zh": "zho_simpl",
             "sw": "swh",
             "ta": "tam",
@@ -240,6 +241,7 @@ class BasePPOTrainer(ABC):
         }
         lang_dict = {
             'eng': "English",
+            "deu": "German",
             "zho_simpl": "Chinese",
             'swh': "Swahili",
             "tam": "Tamil",
@@ -523,6 +525,7 @@ class PPOTrainer(BasePPOTrainer):
             number_of_samples = 0
             for _, rand_prompts, labels in self.prompts_dataloader:
                 print(f"len(rand_prompts): {len(rand_prompts)}, len(labels): {len(labels)}")
+                print(f"labels: {labels[0]}")
                 print(f"rand_prompts: {rand_prompts[0]}")
                 remote_reward_model = self.remote_reward_model
                 rollout_samples = self.samples_generator.generate_samples(

@@ -286,13 +286,18 @@ def main() -> None:
   #     "reference": "埃胡德·乌尔博士（新斯科舍省哈利法克斯市达尔豪西大学医学教授，加拿大糖尿病协会临床与科学部门教授）提醒，这项研究仍处在早期阶段。",
   #   }
   # ]
-  ds = [
-      {
-          "source": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal.",
-          "hypothesis": "Dr. Tony Moll在南非KwaZulu-Natal地区发现了一种非常难治疗的结核病类型——Extremely Drug Resistant Tuberculosis（XDR-TB）。这种病菌对大多数常规抗生素治疗无效，需要使用特定的抗结核药物进行治疗。",
-          "reference": "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。",
-      }
-  ]
+  # ds = [
+  #     {
+  #         "source": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal.",
+  #         "hypothesis": "Dr. Tony Moll在南非KwaZulu-Natal地区发现了一种非常难治疗的结核病类型——Extremely Drug Resistant Tuberculosis（XDR-TB）。这种病菌对大多数常规抗生素治疗无效，需要使用特定的抗结核药物进行治疗。",
+  #         "reference": "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。",
+  #     }
+  # ]
+  ds = [{
+    "source": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
+    "hypothesis": "现在我们有四个月大的老鼠，这些老鼠曾经是糖尿病患者。\n\n中文翻译如下：\n\n现在我们有四个月大的老鼠，这些老鼠曾经是糖尿病患者。",
+    # "reference": "他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”",
+  }]
   # ds = [
   #   {
   #     "source": "Because the dinosaur feathers do not have a well-developed shaft, called a rachis, but do have other features of feathers — barbs and barbules — the researchers inferred the rachis was likely a later evolutionary development that these other features.",

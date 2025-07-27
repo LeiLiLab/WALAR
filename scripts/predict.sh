@@ -2,8 +2,8 @@
 cd /mnt/gemini/data1/yifengliu/qe-lr/code
 
 data_name="dev23"
-model_name="XComet"
-model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
+model_name="metricX"
+model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
 batch_size=16 ### Should be divisible by the number of GPUs
 
@@ -112,8 +112,8 @@ elif [ $data_name == "dev23" ]; then
       --input_file /mnt/gemini/data1/yifengliu/data/wmt23-dev/dev.${src}${tgt}.df.short.tsv \
       --output_dir /mnt/gemini/data1/yifengliu/qe-lr/output/wmt23-dev \
       --src $src \
-      --tgt $tgt 
-      # --qe
+      --tgt $tgt \
+      --qe
   done
 elif [ $data_name == "test24" ]; then
   language_pairs_list=(

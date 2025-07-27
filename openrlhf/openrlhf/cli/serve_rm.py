@@ -364,6 +364,7 @@ class RewardModelProxy:
               # tgts = [query.split('Translate from English to Chinese:\nassistant\n', 1)[1] for query in queries]
               print(f"queries[0]: {queries[0]}")
               print(f"tgts[0]: {tgts[0]}")
+              print(f"labels[0]: {labels[0]}")
               # print(f"src[0]: {srcs[0]}")
               # print(f"tgt[0]: {tgts[0]}")
               for src, tgt, label in zip(srcs, tgts, labels):
