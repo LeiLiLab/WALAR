@@ -90,7 +90,7 @@ class Actor(nn.Module):
                 torch_dtype=torch.bfloat16 if bf16 else "auto",
                 device_map=device_map,
             )
-            self.freeze_parameters()
+            # self.freeze_parameters()
             # self.print_trainable_parameters()
             # LoRA
             if lora_rank > 0:

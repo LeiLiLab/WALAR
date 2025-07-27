@@ -17,10 +17,10 @@ export RAY_DEBUG_POST_MORTEM=1
 wandb_token=5bebcc325992863eb55622d9ad2e7c85c95a1f15
 
 src="en"
-tgt="zh"
-version="2.5"
-size="3B-Instruct"
-reward_name="Freeze-Rule-Detect"
+tgt="de"
+version="3"
+size="4B"
+reward_name="Reference2"
 
 # remote_rm_url
 # remote_rm_url2
@@ -29,7 +29,7 @@ reward_name="Freeze-Rule-Detect"
 
 #--remote_comet_url http://localhost:4000/get_reward \
 ray job submit --address="http://127.0.0.1:8265" \
-    --runtime-env-json='{"working_dir": "/mnt/gemini/data1/yifengliu/qe-lr/openrlhf"}' \
+    --runtime-env-json='{"working_dir": "/mnt/gemini/data1/yifengliu/qe-lr/openrlhf", "excludes": ["/mnt/gemini/data1/yifengliu/qe-lr/openrlhf/wandb/run-20250726_165454-yl7o7sbx/run-yl7o7sbx.wandb"]}' \
     -- python -m openrlhf.cli.train_ppo_ray \
     --ref_num_nodes 1 \
     --ref_num_gpus_per_node 1 \
@@ -41,7 +41,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --ref_reward_offload \
     --pretrain /mnt/gemini/data1/yifengliu/model/Qwen${version}-${size} \
     --remote_rm_url http://localhost:2000/get_reward \
-    --remote_comet_url http://localhost:3000/get_reward \
+    --remote_comet_url http://localhost:5433/get_reward \
     --micro_train_batch_size 32 \
     --train_batch_size 128 \
     --micro_rollout_batch_size 32 \
@@ -59,7 +59,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --advantage_estimator group_norm \
-    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/base_${src}-${tgt}-1m.jsonl \
+    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/base_${src}-${tgt}2-1m.jsonl \
     --src ${src} \
     --tgt ${tgt} \
     --eval_dir "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev" \
@@ -67,6 +67,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --eval_steps 10 \
     --eval_n_samples_per_prompt 1\
     --input_key input_key \
+    --label_key label_key \
     --apply_chat_template \
     --normalize_reward \
     --adam_offload \

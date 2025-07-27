@@ -110,7 +110,7 @@ def predict(model, tokenizer, dataset, sampling_params, lang_pair, model_path):
             inputs = tokenizer(sources, return_tensors="pt", padding=True)
             inputs.to("cuda:0")
             translated_tokens = model.generate(
-                **inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids("zho_Hans"), min_length=50, max_length=512
+                **inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids("deu_Latn"), max_length=512
             )
             output = tokenizer.batch_decode(translated_tokens, skip_special_tokens=True, model_max_length=512)
             responses.extend(output)
