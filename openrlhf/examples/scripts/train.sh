@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=6,7
 ray start --head --node-ip-address 0.0.0.0 --num-gpus 2
 
 eval "$(/mnt/gemini/data1/yifengliu/miniconda3/bin/conda shell.bash hook)"
@@ -17,10 +17,10 @@ export RAY_DEBUG_POST_MORTEM=1
 wandb_token=5bebcc325992863eb55622d9ad2e7c85c95a1f15
 
 src="en"
-tgt="de"
+tgt="zh"
 version="3"
 size="4B"
-reward_name="Reference2"
+reward_name="Word-Align-MetricX2"
 
 # remote_rm_url
 # remote_rm_url2
@@ -41,7 +41,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --ref_reward_offload \
     --pretrain /mnt/gemini/data1/yifengliu/model/Qwen${version}-${size} \
     --remote_rm_url http://localhost:2000/get_reward \
-    --remote_comet_url http://localhost:5433/get_reward \
+    --remote_comet_url http://localhost:3333/get_reward \
     --micro_train_batch_size 32 \
     --train_batch_size 128 \
     --micro_rollout_batch_size 32 \
@@ -59,7 +59,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --advantage_estimator group_norm \
-    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/base_${src}-${tgt}2-1m.jsonl \
+    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/base_${src}-${tgt}-1m.jsonl \
     --src ${src} \
     --tgt ${tgt} \
     --eval_dir "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev" \
@@ -67,7 +67,6 @@ ray job submit --address="http://127.0.0.1:8265" \
     --eval_steps 10 \
     --eval_n_samples_per_prompt 1\
     --input_key input_key \
-    --label_key label_key \
     --apply_chat_template \
     --normalize_reward \
     --adam_offload \

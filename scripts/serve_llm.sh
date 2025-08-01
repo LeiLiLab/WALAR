@@ -7,7 +7,7 @@ source /mnt/gemini/home/yifengliu/miniconda3/bin/activate qe-rl
 cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 
 base_model="Qwen3-4B"
-model_name="Qwen3-32B-AWQ"
+model_name="Qwen3-30B-A3B"
 eval_type="da"
 
 export CUDA_VISIBLE_DEVICES=0,1

@@ -1,10 +1,11 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=4
 # Default values
 declare -A model_path
+num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 
-model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen2.5-3B-Instruct"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-Truncate-Qwen2.5-3B-Instruct-en-zh-1M-bsz128/global_step780_hf"
+model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-30B-A3B-Instruct-2507"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Word-Align-MetricX-Qwen3-4B-en-zh-1M-bsz128/global_step60_hf"
 model_path["nllb"]="/mnt/gemini/data1/yifengliu/model/nllb-200-distilled-1.3B"
 # zho_simpl, zho_trad, swh, tam, asm
 MODEL_NAME="checkpoint"
@@ -86,6 +87,6 @@ for target in "${target_language_list[@]}"; do
         --lang_pair "$LANG_PAIR" \
         --comet22 True \
         --xcomet False \
-        --tensor_parallel_size 1 \
+        --tensor_parallel_size $num_gpus \
         --output_file "$OUTPUT_FILE"
 done

@@ -65,8 +65,18 @@ def compute_reward(
     #
     eos_indices = action_mask.size(1) - 1 - action_mask.long().fliplr().argmax(dim=1, keepdim=True)
     last_reward = torch.zeros_like(kl).scatter_(dim=1, index=eos_indices, src=r.unsqueeze(1).to(kl.dtype))
-
+    # The ones in the vector means the length of the sequence
     reward = last_reward + kl_reward
+    # Length penalty here
+    # print(r.shape)
+    # print(action_mask)
+    
+    # seq_len = (action_mask.long() == 1).sum(dim=1)
+    # print(seq_len)
+    # print(seq_len.float().mean(dim=0))
+    # length_penalty = torch.zeros_like(kl).scatter_(dim=1, index=eos_indices, src=seq_len.unsqueeze(1).to(kl.dtype))
+    # length_coefficient = -0.01
+    # reward = last_reward + kl_reward + length_coefficient * length_penalty  
 
     return reward
 

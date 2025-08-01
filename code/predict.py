@@ -256,7 +256,7 @@ def get_predictions(
     predictions = model_output.scores
   else:
     raise ValueError("Unsupported model name or path: {}".format(model_name))
-  
+  import code; code.interact(local=locals())
   return predictions
 
            
@@ -293,18 +293,18 @@ def main() -> None:
   #         "reference": "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。",
   #     }
   # ]
-  ds = [{
-    "source": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
-    "hypothesis": "现在我们有四个月大的老鼠，这些老鼠曾经是糖尿病患者。\n\n中文翻译如下：\n\n现在我们有四个月大的老鼠，这些老鼠曾经是糖尿病患者。",
-    # "reference": "他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”",
-  }]
-  # ds = [
-  #   {
-  #     "source": "Because the dinosaur feathers do not have a well-developed shaft, called a rachis, but do have other features of feathers — barbs and barbules — the researchers inferred the rachis was likely a later evolutionary development that these other features.",
-  #     "hypothesis": "由于恐龙羽毛缺乏典型的羽毛轴（rachis），即羽毛中贯穿整个结构的中轴部分，但仍然具备羽毛的基本特征，如羽片和羽丝，研究人员据此推断，羽毛轴这一结构可能是后来才逐渐演化出来的，而羽片和羽丝等其他特征则可能在更早的时候就已经存在了。",
-  #     "reference": "恐龙的羽毛并没有发育良好的主干——这称为“羽轴”，但还是有羽毛的其他特征，比如羽枝和羽小枝，研究人员推断羽轴的进化可能比这些其他特征晚。",
-  #   }
-  # ]
+  # ds = [{
+  #   "source": "On Monday, Sara Danius, permanent secretary of the Nobel Committee for Literature at the Swedish Academy, publicly announced during a radio program on Sveriges Radio in Sweden the committee, unable to reach Bob Dylan directly about winning the 2016 Nobel Prize in Literature, had abandoned its efforts to reach him.",
+  #   "hypothesis": "周一，瑞典学院诺贝尔文学委员会常务秘书萨拉·丹尼尔斯在瑞典广播电台的一档节目中向公众宣布，委员会因无法直接联系到鲍勃·迪伦，通知他获得了 2016 年诺贝尔文学奖，已经放弃了与他联系的尝试。",
+  #   # "reference": "他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”",
+  # }]
+  ds = [
+    {
+      "source": "Because the dinosaur feathers do not have a well-developed shaft, called a rachis, but do have other features of feathers — barbs and barbules — the researchers inferred the rachis was likely a later evolutionary development that these other features.",
+      "hypothesis": "由于恐龙羽毛缺乏典型的羽毛轴（rachis），即羽毛中贯穿整个结构的中轴部分，但仍然具备羽毛的基本特征，如羽片和羽丝，研究人员据此推断，羽毛轴这一结构可能是后来才逐渐演化出来的，而羽片和羽丝等其他特征则可能在更早的时候就已经存在了。",
+      "reference": "恐龙的羽毛并没有发育良好的主干——这称为“羽轴”，但还是有羽毛的其他特征，比如羽枝和羽小枝，研究人员推断羽轴的进化可能比这些其他特征晚。",
+    }
+  ]
   ds = datasets.Dataset.from_list(ds)
   ds, data_collator = get_dataset(
       ds,
