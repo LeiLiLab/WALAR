@@ -183,18 +183,21 @@ def get_scores(eval_type: str, ds: List[Dict], sampling_params: SamplingParams, 
     # scores = [score if score is not None else 0 for score in scores]
     scores = [[0 if sc is None else sc for sc in s]for s in scores]
     scores = [sum(s) / len(s) for s in scores]
+    print(outputs1[0])
     # import code; code.interact(local=locals())
     return scores
 
 def get_sampling_params(metric_name, args):
-  if metric_name == "Qwen3-235B":
-      sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, min_p=0, presence_penalty=1.5, max_tokens=2048, n=args.turns)
-  elif metric_name == "Qwen3-32B-AWQ":
-      sampling_params = SamplingParams(temperature=1, top_p=0.9, top_k=-1, min_p=0, max_tokens=2048, n=args.turns)
-  else:
-      # sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, min_p=0, max_tokens=args.max_tokens, n=args.turns)
-      sampling_params = SamplingParams(temperature=0.0, top_p=1, top_k=-1, presence_penalty=0, frequency_penalty=0, max_tokens=2048, n=args.turns)
-  return sampling_params
+    if metric_name == "Qwen3-235B":
+        sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, min_p=0, presence_penalty=1.5, max_tokens=2048, n=args.turns)
+    elif metric_name == "Qwen3-32B-AWQ":
+        sampling_params = SamplingParams(temperature=1, top_p=0.9, top_k=-1, min_p=0, max_tokens=2048, n=args.turns)
+    elif metric_name == "Qwen3-32B-A3B":
+        sampling_params = SamplingParams(temperature=1, top_p=0.9, top_k=-1, min_p=0, max_tokens=2048, n=args.turns)
+    else:
+        # sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, min_p=0, max_tokens=args.max_tokens, n=args.turns)
+        sampling_params = SamplingParams(temperature=0.0, top_p=1, top_k=-1, presence_penalty=0, frequency_penalty=0, max_tokens=2048, n=args.turns)
+    return sampling_params
 
 class RewardModelProxy:
     def __init__(self, args):
@@ -208,6 +211,7 @@ class RewardModelProxy:
           "Qwen3-32B": "/mnt/gemini/data1/yifengliu/model/Qwen3-32B",
           "Qwen3-32B-AWQ": "/mnt/gemini/data1/yifengliu/model/Qwen3-32B-AWQ",
           "Qwen3-235B": "/mnt/gemini/data1/yifengliu/model/Qwen3-235B-A22B-GPTQ-Int4",
+          "Qwen3-30B-A3B": "/mnt/gemini/data1/yifengliu/model/Qwen3-30B-A3B-Instruct-2507",
         }
         self.model_path = path_dict.get(self.model_name, None)
         self.model = LLM(model=self.model_path, tensor_parallel_size=args.tensor_parallel_size, task="generate", enforce_eager=True)
@@ -221,7 +225,7 @@ class RewardModelProxy:
 
         scores = []
         # batch
-        src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
+        src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
         srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
         src_langs = [re.search(src_pattern, q, re.DOTALL).group(2).strip() for q in queries]
         tgt_langs = [re.search(src_pattern, q, re.DOTALL).group(3).strip() for q in queries]
@@ -244,6 +248,8 @@ class RewardModelProxy:
             lang_info = self.lang_detect_model.predict(tgts)
             min_reward = 0
             cnt = 0
+            print(lang_info[0][:20])
+            print(tgt_langs[0][:20])
             for language, tgt in zip(lang_info[0], tgt_langs):
                 lang_code = language[0].replace("__label__", "")
                 pred_lang = lang_dict.get(lang_code, "")

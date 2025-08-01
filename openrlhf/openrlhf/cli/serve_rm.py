@@ -6,6 +6,7 @@ import re
 
 sys.path.insert(0, "/mnt/gemini/data1/yifengliu/qe-lr/code")
 import models
+from sentence_transformers import SentenceTransformer
 from typing import Any, List, Tuple, Union, Optional
 
 import torch
@@ -13,6 +14,8 @@ import transformers
 import datasets
 import uvicorn
 import fasttext
+import sacrebleu
+import itertools
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from transformers import DataCollatorWithPadding
@@ -174,6 +177,16 @@ class Arguments:
     default=False,
     metadata={"help": "Truncate the reward or not"}
   )
+  
+  bleu: bool = dataclasses.field(
+    default=False,
+    metadata={"help": "Enable BLEU metric"}
+  )
+  
+  align: bool = dataclasses.field(
+    default=False,
+    metadata={"help": "Enable alignment model"}
+  )
 
   load_in_4bit: bool = dataclasses.field(
       default=False,
@@ -293,12 +306,65 @@ def get_dataset(
 
   return ds
 
+def get_spBLEU(hyps, refs):
+    if len(hyps) != len(refs):
+        return None
+    hyps = [hyp.strip() for hyp in hyps]
+    refs = [ref.strip() for ref in refs]
+    result = sacrebleu.corpus_bleu(hyps, [refs], tokenize="spm", force=True).score
+    return result
+
+
+def align_score(srcs, tgts, model, tokenizer):
+  align_score_list = []
+  for src, tgt in zip(srcs, tgts):
+    sent_src, sent_tgt = src.strip().split(), tgt.strip().split()
+    token_src, token_tgt = [tokenizer.tokenize(word) for word in sent_src], [tokenizer.tokenize(word) for word in sent_tgt]
+    # print(token_src)
+    # print(token_tgt)
+    wid_src, wid_tgt = [tokenizer.convert_tokens_to_ids(x) for x in token_src], [tokenizer.convert_tokens_to_ids(x) for x in token_tgt]
+    ids_src, ids_tgt = tokenizer.prepare_for_model(list(itertools.chain(*wid_src)), return_tensors='pt', model_max_length=tokenizer.model_max_length, truncation=True)['input_ids'], tokenizer.prepare_for_model(list(itertools.chain(*wid_tgt)), return_tensors='pt', truncation=True, model_max_length=tokenizer.model_max_length)['input_ids']
+    sub2word_map_src = []
+    for i, word_list in enumerate(token_src):
+      sub2word_map_src += [i for x in word_list]
+    sub2word_map_tgt = []
+    for i, word_list in enumerate(token_tgt):
+      sub2word_map_tgt += [i for x in word_list]
+
+    # alignment
+    align_layer = 8
+    threshold = 1e-3
+    model.eval()
+    with torch.no_grad():
+      out_src = model(ids_src.unsqueeze(0), output_hidden_states=True)[2][align_layer][0, 1:-1]
+      out_tgt = model(ids_tgt.unsqueeze(0), output_hidden_states=True)[2][align_layer][0, 1:-1]
+
+      dot_prod = torch.matmul(out_src, out_tgt.transpose(-1, -2))
+
+      softmax_srctgt = torch.nn.Softmax(dim=-1)(dot_prod)
+      softmax_tgtsrc = torch.nn.Softmax(dim=-2)(dot_prod)
+
+      softmax_inter = (softmax_srctgt > threshold)*(softmax_tgtsrc > threshold)
+
+    align_subwords = torch.nonzero(softmax_inter, as_tuple=False)
+    align_words = set()
+    for i, j in align_subwords:
+      align_words.add( (sub2word_map_src[i], sub2word_map_tgt[j]) )
+    align_percent = len(align_words) / len(token_tgt)
+    align_score_list.append(align_percent)
+  return align_score_list
 
 class RewardModelProxy:
     def __init__(self, args):
         self.args = args
         self.base_model = args.base_model
-        self.lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+        if args.lang_detect:
+          self.lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+        if args.align:
+          model_path = "/mnt/gemini/data1/yifengliu/model/LaBSE"
+          # self.align_model = SentenceTransformer(model_path)
+          self.align_model = transformers.BertModel.from_pretrained('bert-base-multilingual-cased')
+          self.align_tokenizer = transformers.BertTokenizer.from_pretrained('bert-base-multilingual-cased')
         if 'metricX' in args.model_name:
             self.model_name = args.model_name
             self.tokenizer = transformers.AutoTokenizer.from_pretrained("google/mt5-xl", cache_dir="/mnt/gemini/data1/yifengliu/model")
@@ -404,6 +470,7 @@ class RewardModelProxy:
         # print(f"{self.model_name}: prompt: {prompts[0]}")
         # print(f"{self.model_name}: score: {scores[0]}")
         extra_logs = {}
+        extra_logs['metric_score'] = sum(scores) / len(scores)
         if self.args.rule:
           min_reward = -25 if 'metricX' in self.model_name else 0
           new_scores = []
@@ -435,12 +502,6 @@ class RewardModelProxy:
             else:
               cnt += 1
               detect_rewards.append(min_reward)
-          # for language in lang_info[0]:
-          #   if language[0].replace("__label__", "") == self.tgt:
-          #     detect_rewards.append(float('inf'))
-          #   else:
-          #     cnt += 1
-          #     detect_rewards.append(min_reward)
           scores = [min(score, detect_reward) for score, detect_reward in zip(scores, detect_rewards)]
           logger.info(lang_info[0][:20])
           extra_logs['lang_penalty_percent'] = cnt / len(tgts)
@@ -449,6 +510,38 @@ class RewardModelProxy:
           truncate_bound = -3
           extra_logs['truncate_percent'] = sum(score >= truncate_bound for score in scores) / len(scores)
           scores = [score if score < truncate_bound else truncate_bound for score in scores]
+        if self.args.bleu:
+          bleu_score_list = []
+          for tgt, label in zip(tgts, labels):
+            print(f"tgt: {tgt}")
+            print(f"label: {label}")
+            bleu_score = get_spBLEU([tgt], [label])
+            bleu_score_list.append(bleu_score)
+          print(f"bleu_score_list: {bleu_score_list}")
+          scores = [4*score + bleu for score, bleu in zip(scores, bleu_score_list)]
+          print(f"scores: {scores}")
+          extra_logs['mean_bleu_score'] = sum(bleu_score_list) / len(bleu_score_list)
+        if self.args.align:
+          # align_scores = []
+          # for tgt, label in zip(tgts, labels):
+          #   src_embedding = self.align_model.encode(tgt)
+          #   tgt_embedding = self.align_model.encode(label)
+          #   similarity = src_embedding @ tgt_embedding.T
+          #   align_scores.append(float(similarity))
+          # scores = [score + 100*align_score for score, align_score in zip(scores, align_scores)]
+          # extra_logs['mean_align_score'] = sum(align_scores) / len(align_scores)
+          print(srcs[0])
+          print(tgts[0])
+          srcs = [self.align_tokenizer.tokenize(src) for src in srcs]
+          srcs = [" ".join(src) for src in srcs]
+          tgts = [self.align_tokenizer.tokenize(tgt) for tgt in tgts]
+          tgts = [" ".join(tgt) for tgt in tgts]
+          align_score_list = align_score(srcs, tgts, self.align_model, self.align_tokenizer)
+          align_score_list = [score*10 for score in align_score_list]
+          print(align_score_list[:20])
+          scores = [4*score + align_score for score, align_score in zip(scores, align_score_list)]
+          extra_logs['mean_align_score'] = sum(align_score_list) / len(align_score_list)
+          import code; code.interact(local=locals())
         return scores, extra_logs
 
 

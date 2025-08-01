@@ -533,9 +533,11 @@ class PPOTrainer(BasePPOTrainer):
                 )
                 reward1_list = [sample.info.get('reward1', 0) for sample in rollout_samples]
                 reward2_list = [25 * sample.info.get('reward2', 0) for sample in rollout_samples]
-                rule_penalty_percent = rollout_samples[0].info.get('rule_penalty_percent', 0)
-                lang_penalty_percent = rollout_samples[0].info.get('lang_penalty_percent', 0)
-                truncate_percent = rollout_samples[0].info.get('truncate_percent', 0)
+                rule_penalty_percent = rollout_samples[0].info.get('rule_penalty_percent', -1)
+                lang_penalty_percent = rollout_samples[0].info.get('lang_penalty_percent', -1)
+                truncate_percent = rollout_samples[0].info.get('truncate_percent', -1)
+                mean_bleu_score = rollout_samples[0].info.get('mean_bleu_score', -1)
+                metric_score = rollout_samples[0].info.get('metric_score', -1)
                 pbar.update()
                 # breakpoint()
                 # dynamic filtering
@@ -587,9 +589,16 @@ class PPOTrainer(BasePPOTrainer):
                 # breakpoint()
                 status['reward1'] = sum(reward1_list) / len(reward1_list) if reward1_list else 0.0
                 status['reward2'] = sum(reward2_list) / len(reward2_list) if reward2_list else 0.0
-                status['rule_penalty_percent'] = rule_penalty_percent
-                status['lang_penalty_percent'] = lang_penalty_percent
-                status['truncate_percent'] = truncate_percent
+                if rule_penalty_percent != -1:
+                    status['rule_penalty_percent'] = rule_penalty_percent
+                if lang_penalty_percent != -1:
+                    status['lang_penalty_percent'] = lang_penalty_percent
+                if truncate_percent != -1:
+                    status['truncate_percent'] = truncate_percent
+                if mean_bleu_score != -1:
+                    status['mean_bleu_score'] = mean_bleu_score
+                if metric_score != -1:
+                    status['metric_score'] = metric_score
                 if "kl" in status:
                     self.kl_ctl.update(status["kl"], args.rollout_batch_size * args.n_samples_per_prompt)
 

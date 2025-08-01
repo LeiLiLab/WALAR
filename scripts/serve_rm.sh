@@ -8,16 +8,20 @@ base_model="Qwen3-4B"
 lang_detect=False
 rule=False
 truncate=False
+bleu=False
+align=True
 
 export CUDA_VISIBLE_DEVICES=3
 python -m openrlhf.cli.serve_rm \
-    --model_name  ref_metricX\
+    --model_name  metricX\
     --base_model $base_model \
     --port 2000 \
     --max_len 1536 \
     --rule $rule \
     --lang_detect $lang_detect \
     --truncate $truncate \
+    --bleu $bleu \
+    --align $align \
     --batch_size 8 &
 
 echo "MetricX serves successfully!"
@@ -50,11 +54,13 @@ export CUDA_VISIBLE_DEVICES=2
 python -m openrlhf.cli.serve_rm \
     --model_name XComet\
     --base_model $base_model \
-    --port 5433 \
+    --port 3333 \
     --max_len 1536 \
     --rule False \
     --lang_detect False \
     --truncate False \
+    --bleu False \
+    --align False\
     --batch_size 16 &
 
 echo "XComet serves successfully!"
