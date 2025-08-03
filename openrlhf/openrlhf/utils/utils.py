@@ -1,5 +1,6 @@
 from typing import List
 
+import re
 import sacrebleu
 import os
 import torch
@@ -82,6 +83,77 @@ def get_spBLEU(hyps, refs):
         return None
     result = sacrebleu.corpus_bleu(hyps, [refs], tokenize="spm", force=True).score
     return result
+
+def make_back_translation_prompts(rollout_samples, tokenizer, model_path):
+    all_queries = sum(
+        [
+            tokenizer.batch_decode(
+                remove_pad_token(s.sequences, s.attention_mask), skip_special_tokens=False
+            )
+            for s in rollout_samples
+        ],
+        [],
+    )
+    pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
+    src_langs = [re.search(pattern, q, re.DOTALL).group(2).strip() for q in all_queries]
+    tgt_langs = [re.search(pattern, q, re.DOTALL).group(3).strip() for q in all_queries]
+    new_prompt = []
+    if 'Qwen3' in model_path:
+        tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
+        tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in all_queries]
+    else:
+        tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
+        tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in all_queries]
+    for src_lang, tgt_lang, tgt in zip(src_langs, tgt_langs, tgts):
+        sentence = f"{tgt}\nTranslate from {tgt_lang} to {src_lang}:"
+        message = [{"role": "user", "content": sentence}]
+        new_prompt.append(tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=False))
+    print(f"new_prompt: {new_prompt[0]}")
+    return new_prompt
+
+def calculate_bleu_reward(rollout_samples, back_translate_samples, tokenizer, model_path):
+    """Calculate the BLEU reward for the back-translation samples."""
+    all_queries = sum(
+        [
+            tokenizer.batch_decode(
+                remove_pad_token(s.sequences, s.attention_mask), skip_special_tokens=False
+            )
+            for s in rollout_samples
+        ],
+        [],
+    )
+    all_back_translations = sum(
+        [
+            tokenizer.batch_decode(
+                remove_pad_token(s.sequences, s.attention_mask), skip_special_tokens=False
+            )
+            for s in back_translate_samples
+        ],
+        [],
+    )
+    pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
+    refs = [re.search(pattern, q, re.DOTALL).group(1).strip() for q in all_queries]
+    if 'Qwen3' in model_path:
+        tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
+        # print(all_back_translations)
+        hyps = []
+        for q in all_back_translations:
+            print(q)
+            hyp = re.search(tgt_pattern, q, re.DOTALL).group(2).strip()
+            hyps.append(hyp)
+            
+        # hyps = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in all_back_translations]
+    else:
+        tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
+        hyps = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in all_back_translations]
+    bleu_reward_list = []
+    for tgt, label in zip(hyps, refs):
+        bleu_score = get_spBLEU([tgt], [label])
+        bleu_reward_list.append(bleu_score)
+    print(f"In BLEU Ref: {refs[0]}")
+    print(f"In BLEU Hyp: {hyps[0]}")
+    print(f"BLEU reward: {bleu_reward_list[:10]}")
+    return bleu_reward_list
 
 def my_load_dataset(data_pair, lang):
     dataset = []

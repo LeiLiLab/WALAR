@@ -9,9 +9,9 @@ lang_detect=False
 rule=False
 truncate=False
 bleu=False
-align=True
+align=False
 
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=0
 python -m openrlhf.cli.serve_rm \
     --model_name  metricX\
     --base_model $base_model \
@@ -50,11 +50,11 @@ echo "MetricX serves successfully!"
 # echo "COMET22 serves successfully!"
 
 # 8000
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 python -m openrlhf.cli.serve_rm \
     --model_name XComet\
     --base_model $base_model \
-    --port 3333 \
+    --port 4444 \
     --max_len 1536 \
     --rule False \
     --lang_detect False \

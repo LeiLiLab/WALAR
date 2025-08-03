@@ -88,6 +88,10 @@ if __name__ == "__main__":
     # hyps = [data['pred'] for data in dataset]
     # refs = [data['ref'] for data in dataset]
     dataset = dataset[:100]
+    hyps = ["He added: “We now have four-month-old mice that were previously diabetic but are now non-diabetic.”"]
+    # hyps = ["\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added."]
+    refs = ["\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added."]
+    bleu = get_spBLEU(hyps, refs)
     # dataset[0]['label']=True
     # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/est.jsonl"
     # with open(save_path, 'w') as f:
