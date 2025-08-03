@@ -157,6 +157,7 @@ def train(args):
         eval_split=args.eval_split,
         src=args.src,
         tgt=args.tgt,
+        back_translate=args.back_translate,
         # generate kwargs
         eval_dir=args.eval_dir,
         do_sample=True,
@@ -433,6 +434,9 @@ if __name__ == "__main__":
     parser.add_argument("--input_key", type=str, default="input", help="JSON dataset key")
     parser.add_argument("--label_key", type=str, default=None, help="JSON dataset key")
     parser.add_argument("--input_template", type=str, default=None)
+    parser.add_argument(
+        "--back_translate", action="store_true", default=False, help="Use back translation"
+    )
     parser.add_argument(
         "--apply_chat_template", action="store_true", default=False, help="Use HF tokenizer chat template"
     )

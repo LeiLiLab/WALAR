@@ -416,7 +416,7 @@ class RewardModelProxy:
         if "metricX" in self.model_name:
           with torch.no_grad():
               ds = []
-              src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
+              src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
               srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
 
               # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
@@ -450,7 +450,7 @@ class RewardModelProxy:
               scores.extend(-predictions)
         elif 'Comet' in self.model_name:
           ds = []
-          src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?)"
+          src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
           srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
 
           # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"

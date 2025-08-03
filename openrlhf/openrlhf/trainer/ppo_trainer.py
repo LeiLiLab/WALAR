@@ -14,7 +14,8 @@ from openrlhf.trainer.ppo_utils.experience_maker import RemoteExperienceMaker
 from openrlhf.trainer.ray.launcher import RayActorGroup
 from openrlhf.utils.deepspeed import DeepspeedStrategy
 from openrlhf.utils.logging_utils import init_logger
-from openrlhf.utils.utils import get_tokenizer, load_flores_dataset, get_spBLEU, remove_pad_token, zero_pad_sequences
+from openrlhf.utils.utils import get_tokenizer, remove_pad_token, zero_pad_sequences
+from openrlhf.utils.utils import make_back_translation_prompts, get_spBLEU, load_flores_dataset, calculate_bleu_reward
 
 logger = init_logger(__name__)
 
@@ -35,6 +36,7 @@ class BasePPOTrainer(ABC):
         eval_split: str = "test",
         src: str = "eng",
         tgt: str = "zho_simpl",
+        back_translate: bool = False,
         **generate_kwargs,
     ) -> None:
         super().__init__()
@@ -55,6 +57,7 @@ class BasePPOTrainer(ABC):
         
         self.src = src
         self.tgt = tgt  
+        self.back_translate = back_translate
 
         self.prompt_max_len = prompt_max_len
         self.generate_kwargs = generate_kwargs
@@ -421,6 +424,7 @@ class PPOTrainer(BasePPOTrainer):
         eval_split: str = "test",
         src: str = "eng",
         tgt: str = "zho_simpl",
+        back_translate: bool = False,
         **generate_kwargs,
     ) -> None:
         super().__init__(
@@ -437,6 +441,7 @@ class PPOTrainer(BasePPOTrainer):
             eval_split,
             src,
             tgt,
+            back_translate,
             **generate_kwargs,
         )
 
@@ -528,11 +533,32 @@ class PPOTrainer(BasePPOTrainer):
                 print(f"labels: {labels[0]}")
                 print(f"rand_prompts: {rand_prompts[0]}")
                 remote_reward_model = self.remote_reward_model
-                rollout_samples = self.samples_generator.generate_samples(
-                    rand_prompts, labels, remote_reward_model=remote_reward_model, remote_reward_model2=self.remote_reward_model2, **self.generate_kwargs
-                )
+                if self.back_translate:
+                    print(self.generate_kwargs)
+                    rollout_samples = self.samples_generator.generate_samples(
+                        rand_prompts, labels, remote_reward_model=remote_reward_model, remote_reward_model2=self.remote_reward_model2, **self.generate_kwargs
+                    )
+                    back_translate_prompts = make_back_translation_prompts(rollout_samples, self.tokenizer, self.pretrain)
+                    print(self.tokenizer.batch_decode(rollout_samples[0].sequences[0]))
+                    print(back_translate_prompts[0])
+                    print(len(rollout_samples), len(back_translate_prompts))
+                    back_translate_samples = self.samples_generator.generate_samples(
+                        back_translate_prompts, [""]*len(back_translate_prompts), remote_reward_model=None, remote_reward_model2=None, n_samples_per_prompt=1, **self.generate_kwargs
+                    )
+                    bleu_reward_list = calculate_bleu_reward(rollout_samples, back_translate_samples, self.tokenizer, self.pretrain)
+                    print([s.rewards for s in rollout_samples[:10]])
+                    for rollout_sample, bleu_reward in zip(rollout_samples, bleu_reward_list):
+                        rollout_sample.info['bleu_reward'] = torch.tensor(bleu_reward).unsqueeze(0)
+                        rollout_sample.rewards = rollout_sample.rewards*4 + bleu_reward
+                    print([s.rewards for s in rollout_samples[:10]])
+                else:
+                    rollout_samples = self.samples_generator.generate_samples(
+                        rand_prompts, labels, remote_reward_model=remote_reward_model, remote_reward_model2=self.remote_reward_model2, **self.generate_kwargs
+                    )
+            
                 reward1_list = [sample.info.get('reward1', 0) for sample in rollout_samples]
                 reward2_list = [25 * sample.info.get('reward2', 0) for sample in rollout_samples]
+                bleu_reward_list = [sample.info.get('bleu_reward', -1) for sample in rollout_samples]
                 rule_penalty_percent = rollout_samples[0].info.get('rule_penalty_percent', -1)
                 lang_penalty_percent = rollout_samples[0].info.get('lang_penalty_percent', -1)
                 truncate_percent = rollout_samples[0].info.get('truncate_percent', -1)
@@ -599,6 +625,8 @@ class PPOTrainer(BasePPOTrainer):
                     status['mean_bleu_score'] = mean_bleu_score
                 if metric_score != -1:
                     status['metric_score'] = metric_score
+                if bleu_reward_list[0] != -1:
+                    status['bleu_reward'] = sum(bleu_reward_list) / len(bleu_reward_list)
                 if "kl" in status:
                     self.kl_ctl.update(status["kl"], args.rollout_batch_size * args.n_samples_per_prompt)
 
