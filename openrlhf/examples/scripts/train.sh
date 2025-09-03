@@ -20,10 +20,10 @@ export RAY_DEBUG_POST_MORTEM=1
 wandb_token=e00b93c51b52fed0712d2130a4df508e9a41e95c
 
 src="en"
-tgt="cs"
+tgt="mix-mid2"
 version="3"
 size="4B"
-reward_name="Length-Rule-Detect-MetricX"
+reward_name="Seq-Rule-Detect-MetricX"
 if [ "${#tgt}" -le 3]; then
     evaluation_step=10
 else
@@ -47,7 +47,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --vllm_tensor_parallel_size 1 \
     --colocate_actor_ref \
     --ref_reward_offload \
-    --pretrain /mnt/gemini/data1/yifengliu/model/Qwen3-4B \
+    --pretrain /mnt/gemini/data1/yifengliu/checkpoints/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf \
     --remote_rm_url http://localhost:2000/get_reward \
     --remote_comet_url http://localhost:5555/get_reward \
     --micro_train_batch_size 16 \
@@ -72,7 +72,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --tgt ${tgt} \
     --eval_dir "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev" \
     --eval_temperature 0.0 \
-    --eval_steps 10 \
+    --eval_steps 10000 \
     --eval_n_samples_per_prompt 1\
     --input_key input_key \
     --apply_chat_template \

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 cd /mnt/gemini/data1/yifengliu/qe-lr/code
 
-data_name="dev23"
-model_name="metricX"
-model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
+data_name="flores"
+model_name="XComet"
+model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
 batch_size=16 ### Should be divisible by the number of GPUs
 
@@ -169,10 +169,11 @@ elif [ $data_name == "low-res" ]; then
       --alignment
   done
 elif [ $data_name == "flores" ]; then
-  src="ara"
+  # src="ara"
+  src="eng"
   tgt_list=(
     # "ben"
-    # "ltz"
+    "ltz"
     "mkd"
     "pol"
     "srp"
@@ -200,7 +201,7 @@ elif [ $data_name == "flores" ]; then
       continue
     fi
     # tgt="slk"
-    dirname="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step460_hf"
+    dirname="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf"
     # dirname="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
     python predict.py \
       --model_name $model_name \
