@@ -7,15 +7,15 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 base_model="Qwen3-4B"
 lang_detect=True
 rule=True       # '\n' for metricX
-truncate=True  # reward truncate
+truncate=False  # length truncate
 bleu=False
-align=False
+align=True
 
 # No need to care if align=False
 src=en
 tgt=ces
 
-export CUDA_VISIBLE_DEVICES=4
+export CUDA_VISIBLE_DEVICES=5
 python -m openrlhf.cli.serve_rm \
     --model_name  metricX\
     --base_model $base_model \
@@ -28,7 +28,7 @@ python -m openrlhf.cli.serve_rm \
     --align $align \
     --src $src \
     --tgt $tgt \
-    --batch_size 4 &
+    --batch_size 16 &
 
 # echo "MetricX serves successfully!"
 
@@ -56,21 +56,21 @@ python -m openrlhf.cli.serve_rm \
 # echo "COMET22 serves successfully!"
 
 # 80000
-export CUDA_VISIBLE_DEVICES=5
-python -m openrlhf.cli.serve_rm \
-    --model_name XComet\
-    --base_model $base_model \
-    --port 5555 \
-    --max_len 1536 \
-    --rule False \
-    --lang_detect False \
-    --truncate False \
-    --bleu False \
-    --align False\
-    --src $src \
-    --tgt $tgt \
-    --batch_size 16 &
+# export CUDA_VISIBLE_DEVICES=5
+# python -m openrlhf.cli.serve_rm \
+#     --model_name XComet\
+#     --base_model $base_model \
+#     --port 5555 \
+#     --max_len 1536 \
+#     --rule False \
+#     --lang_detect False \
+#     --truncate False \
+#     --bleu False \
+#     --align False\
+#     --src $src \
+#     --tgt $tgt \
+#     --batch_size 16 &
 
-echo "XComet serves successfully!"
+# echo "XComet serves successfully!"
 
 wait

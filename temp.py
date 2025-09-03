@@ -7,6 +7,7 @@ import sacrebleu
 import fasttext
 import matplotlib.pyplot as plt
 from bleurt import score
+from sacrebleu.metrics import BLEU, CHRF, TER
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer
 from comet import load_from_checkpoint, download_model
@@ -27,6 +28,12 @@ def get_spBLEU(hyps, refs):
     result = sacrebleu.corpus_bleu(hyps, [refs], tokenize="flores101", force=True).score
     return result
 
+def get_sentence_bleu(hyp, ref):
+    hyp = hyp.strip()
+    ref = ref.strip()
+    result = sacrebleu.sentence_bleu(hyp, [ref], smooth_method='floor', tokenize="flores101").score
+    return result
+
 def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/gemini/data1/yifengliu/model/models--Unbabel--wmt22-comet-da/snapshots/2760a223ac957f30acfb18c8aa649b01cf1d75f2/checkpoints/model.ckpt"):
     """Calculate COMET score."""
     model = load_from_checkpoint(model_path)
@@ -34,12 +41,13 @@ def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/g
     # Prepare inputs for COMET
     inputs = [{"src": src.strip(), "mt": mt.strip(), "ref": ref.strip()} for src, mt, ref in zip(src_texts, predictions, references)]
     
-    output = model.predict(inputs)
+    output = model.predict(inputs, batch_size=16, gpus=1)
     
     scores, mean_score = output.scores, output.system_score
     return {"mean_score": mean_score, "scores": scores}
 
 if __name__ == "__main__":
+    xcomet_path = "/mnt/gemini/data1/yifengliu/model/models--Unbabel--XCOMET-XL/snapshots/6a123c5e8e6dccab25e5fcffa3c8b417abadb462/checkpoints/model.ckpt"
     # Example usage
     # dataset = []
     # path = "/mnt/gemini/data1/yifengliu/data/wmt24_news_crawl/ja/ja1m.jsonl"
@@ -80,7 +88,8 @@ if __name__ == "__main__":
     # path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen2.5-3B-Instruct-En-Zh-1M/global_step160_hf/eng-zho_simpl.txt"
     dataset = []
     # path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Seq-Align-Rule-Detect-MetricX-Qwen3-4B-en-cs-1M-bsz128/global_step400_hf/eng-ben.txt"
-    path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B/eng-jav.txt"
+    path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B/eng-tgl.txt"
+    # path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf/eng-tgl.txt"
     # dataset = load_dataset(path)
     # path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B/eng-jav.txt"
     # # path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step200_hf/eng-jpn.txt"
@@ -95,7 +104,35 @@ if __name__ == "__main__":
     srcs = [data['src'] for data in dataset]
     hyps = [data['pred'] for data in dataset]
     refs = [data['ref'] for data in dataset]
+    srcs, hyps, refs = srcs[200:300], hyps[200:300], refs[200:300]
+    # hyps, refs = 
+    comet_scores = calculate_comet_score(srcs, refs, hyps, model_path=xcomet_path)['scores']
+    chrf = CHRF()
     
+    bleu_scores = [chrf.sentence_score(hyp, [ref]).score for hyp, ref in zip(hyps, refs)]
+    # bleu_scores = [get_sentence_bleu(hyp, ref) for hyp, ref in zip(hyps, refs)]
+    # import code; code.interact(local=locals())
+    for i, (x, y) in enumerate(zip(bleu_scores, comet_scores)):
+        plt.annotate(
+            str(i),           # label with index
+            (x, y),           # position of the point
+            textcoords="offset points",
+            xytext=(5, 5),    # offset position of label
+            ha='center',
+            fontsize=8
+        )
+    
+    plt.scatter(bleu_scores, comet_scores, alpha=0.7, s=60)
+
+    # Add labels and title
+    plt.xlabel("BLEU Score")
+    plt.ylabel("COMET Score")
+    plt.title("BLEU vs COMET Scores")
+
+    # Optional: add grid
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.savefig(f"/mnt/gemini/data1/yifengliu/qe-lr/output/temp3.png")
+    plt.show()
     # tokenizer = AutoTokenizer.from_pretrained("/mnt/gemini/data1/yifengliu/model/Qwen3-4B")
     # srcs_tokens_length = tokenizer(srcs)['input_ids']
     # hyps_tokens_length = tokenizer(hyps)['input_ids']
@@ -113,9 +150,9 @@ if __name__ == "__main__":
     # print(f"Align Score: {align_score_list}")
 
     
-    lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
-    hyps2 = [tgt.replace("\n", "") for tgt in hyps]
-    lang_info = lang_detect_model.predict(hyps2)
+    # lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+    # hyps2 = [tgt.replace("\n", "") for tgt in hyps]
+    # lang_info = lang_detect_model.predict(hyps2)
     
     # cnt = 0
     # for idx, (lang, hyp) in enumerate(zip(lang_info[0], hyps)):

@@ -11,16 +11,20 @@ def print_result(file_path):
                 bleu_score = line.strip().split()[-1]
             if 'XComet' in line:
                 xcomet_score = line.strip().split()[-1]
+            if "MetricX" in line:
+                metricx_score = line.strip().split()[-1]
     lang_pair = file_path.split('/')[-1].replace('.txt', '')
-    if xcomet_score:
+    if xcomet_score and metricx_score:
+        print(f"{lang_pair}:\t{bleu_score}\t{xcomet_score}\t{metricx_score}")
+    elif xcomet_score:
         print(f"{lang_pair}:\t{bleu_score}\t{xcomet_score}")
     else:
         print(f"{lang_pair}:\t{bleu_score}\t")
-    return {lang_pair: (bleu_score, xcomet_score)}
+    return {lang_pair: (bleu_score, xcomet_score, metricx_score)}
     
 
 if __name__ == "__main__":
-    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step460_hf"
+    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf"
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
     # Walk through the directory and print all file paths
     whole_dict = {}
@@ -28,21 +32,25 @@ if __name__ == "__main__":
         for file in files:
             file_path = os.path.join(root, file)
             whole_dict.update(print_result(file_path))
-    src_lang = "ara"
-    tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "tur", "tam", "fin"]
+    src_lang = "eng"
+    tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
     # print(len(tgt_langs_i_care))
     print("Average spBLEU: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][0]) for tgt in tgt_langs_i_care])/len(tgt_langs_i_care))
     # print([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])
     # print(len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
     print("Average XComet: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][1]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
+    print("Average MetricX: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][2]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None]))
     # print the average here
     import code; code.interact(local=locals())
     # Below is only for copying purpose
     list_of_strings = []
     for tgt in tgt_langs_i_care:
         lang_pair = f"{src_lang}-{tgt}"
-        if whole_dict[lang_pair][1] is not None:
+        if whole_dict[lang_pair][1] is not None and whole_dict[lang_pair][2] is not None:
+            list_of_strings.append(f"{float(whole_dict[lang_pair][0]):.2f} / {float(whole_dict[lang_pair][1])*100:.2f} / {-float(whole_dict[lang_pair][2]):.2f}")
+        elif whole_dict[lang_pair][1] is not None:
             list_of_strings.append(f"{float(whole_dict[lang_pair][0]):.2f} / {float(whole_dict[lang_pair][1])*100:.2f}")
+        
         
     temp_file = "output_for_sheets.txt"
     with open(temp_file, "w") as f:

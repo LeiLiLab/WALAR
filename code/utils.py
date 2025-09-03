@@ -231,6 +231,10 @@ qwen_langs = ["afr", "dan", "nld", "deu", "isl", "ltz", "nob", "swe", "eng", "as
 
 qe_langs = ["afr", "dan", "nld", "deu", "isl", "ltz", "nob", "swe", "cat", "fra", "glg", "por", "ron", "spa", "bel", "bul", "ces", "mkd", "pol", "rus", "srp", "slk", "slv", "ukr", "ben", "guj", "hin", "mar", "npi", "pan", "snd", "urd", "hye", "ell", "gle", "cym", "ita", "lav", "lit", "pus", "fas", "ckb", "tgk", "ceb", "tgl", "ind", "jav", "msa", "mri", "ibo", "nso", "sna", "swh", "umb", "xho", "yor", "zul", "amh", "ara", "mlt", "som", "azj", "kaz", "kir", "tur", "uzb", "kan", "mal", "tam", "tel", "mya", "zho_simpl", "zho_trad", "est", "fin", "hun", "kat", "hau", "heb", "jpn", "khm", "vie", "kor", "lao", "tha", "mon"]
 
+lang_detection_langs = ["af", "als", "am", "an", "ar", "arz", "as", "ast", "av", "az", "azb", "ba", "bar", "bcl", "be", "bg", "bh", "bn", "bo", "bpy", "br", "bs", "bxr", "ca", "cbk", "ce", "ceb", "ckb", "co", "cs", "cv", "cy", "da", "de", "diq", "dsb", "dty", "dv", "el", "eml", "en", "eo", "es", "et", "eu", "fa", "fi", "fr", "frr", "fy", "ga", "gd", "gl", "gn", "gom", "gu", "gv", "he", "hi", "hif", "hr", "hsb", "ht", "hu", "hy", "ia", "id", "ie", "ilo", "io", "is", "it", "ja", "jbo", "jv", "ka", "kk", "km", "kn", "ko", "krc", "ku", "kv", "kw", "ky", "la", "lb", "lez", "li", "lmo", "lo", "lrc", "lt", "lv", "mai", "mg", "mhr", "min", "mk", "ml", "mn", "mr", "mrj", "ms", "mt", "mwl", "my", "myv", "mzn", "nah", "nap", "nds", "ne", "new", "nl", "nn", "no", "oc", "or", "os", "pa", "pam", "pfl", "pl", "pms", "pnb", "ps", "pt", "qu", "rm", "ro", "ru", "rue", "sa", "sah", "sc", "scn", "sco", "sd", "sh", "si", "sk", "sl", "so", "sq", "sr", "su", "sv", "sw", "ta", "te", "tg", "th", "tk", "tl", "tr", "tt", "tyv", "ug", "uk", "ur", "uz", "vec", "vep", "vi", "vls", "vo", "wa", "war", "wuu", "xal", "xmf", "yi", "yo", "yue", "zh"]
+
+training_langs = ["isl", "ltz", "bel", "ces", "mkd", "pol", "srp", "slk", "slv", "ukr", "ben", "guj", "hin", "mar", "npi", "pan", "urd", "hye", "ell", "lav", "lit", "fas", "cym", "ceb", "tgl", "jav", "ara", "azj", "kaz", "tur", "uzb", "kan", "mal", "tam", "tel", "mya", "est", "fin", "hun", "kat", "heb", "khm", "kor", "lao", ]
+
 def my_load_dataset(path):
   dataset = []
   with open(path, 'r') as f:
@@ -404,4 +408,14 @@ class RewardModel:
       
 if __name__ == '__main__':      
   dct = build_matching_lang_dict(lang_dict, mm_dict)
+  
+  support_langs = []
+  for lang in training_langs:
+    language = three2two.get(lang, None)
+    if language is None:
+      print(language)
+      raise ValueError(f"Language {lang} not found in mapping.")
+    if language in lang_detection_langs:
+      support_langs.append(lang)
+    
   import code; code.interact(local=locals())
