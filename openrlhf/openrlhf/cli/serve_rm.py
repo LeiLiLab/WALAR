@@ -9,6 +9,9 @@ import hanlp_restful
 from hanlp_restful import HanLPClient
 
 sys.path.insert(0, "/mnt/gemini/data1/yifengliu/qe-lr/code")
+import masklid
+from masklid import MaskLID
+from utils import lang2long, long2lang
 import models
 from sentence_transformers import SentenceTransformer
 from typing import Any, List, Tuple, Union, Optional
@@ -492,8 +495,20 @@ class RewardModelProxy:
     def __init__(self, args):
         self.args = args
         self.base_model = args.base_model
+        model_path_dict = {
+          "Qwen": "/mnt/gemini/data1/yifengliu/model/Qwen3-4B",
+          "Llama": "/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct",
+        }
+        if "Qwen" in args.base_model:
+          self.base_tokenizer = AutoTokenizer.from_pretrained(model_path_dict["Qwen"])
+        elif "Llama" in args.base_model:
+          self.base_tokenizer = AutoTokenizer.from_pretrained(model_path_dict["Llama"])
+        else:
+          raise ValueError(f"Unsupported base model: {args.base_model}")
         if args.lang_detect:
-          self.lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+          flores_glotlid = ['__label__eng_Latn', '__label__deu_Latn', '__label__isl_Latn', '__label__ltz_Latn', '__label__bel_Cyrl', '__label__ces_Latn', '__label__mkd_Cyrl', '__label__pol_Latn', '__label__srp_Cyrl', '__label__slk_Latn', '__label__slv_Latn', '__label__ukr_Cyrl', '__label__ben_Beng', '__label__guj_Gujr', '__label__hin_Deva', '__label__mar_Deva', '__label__npi_Deva', '__label__pan_Guru', '__label__urd_Arab', '__label__hye_Armn', '__label__ell_Grek', '__label__lvs_Latn', '__label__lit_Latn', '__label__fas_Arab', '__label__cym_Latn', '__label__ceb_Latn', '__label__jav_Latn', '__label__arb_Arab', '__label__azj_Latn', '__label__kaz_Cyrl', '__label__tur_Latn', '__label__uzn_Latn', '__label__kan_Knda', '__label__mal_Mlym', '__label__tam_Taml', '__label__tel_Telu', '__label__mya_Mymr', '__label__ekk_Latn', '__label__fin_Latn', '__label__hun_Latn', '__label__kat_Geor', '__label__heb_Hebr', '__label__khm_Khmr', '__label__kor_Hang', '__label__lao_Laoo', '__label__fil_Latn']
+          # self.lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+          self.lang_detect_model = MaskLID("/mnt/gemini/data1/yifengliu/model/masklid/model_v3.bin", languages=flores_glotlid)
         if args.align:
           # another potential model: bert-base-multilingual-cased
           model_path = "/mnt/gemini/data1/yifengliu/model/bge-m3"
@@ -508,6 +523,7 @@ class RewardModelProxy:
             self.han1 = hanlp.load("/mnt/taurus/home/yifengliu/.hanlp/mtl/ud_ontonotes_tok_pos_lem_fea_ner_srl_dep_sdp_con_xlm_base_20220608_003435", devices=1)
             self.han2 = hanlp.load("/mnt/taurus/home/yifengliu/.hanlp/tok/coarse_electra_small_20220616_012050", devices=1)
         if 'metricX' in args.model_name:
+            self.min_reward = -25
             self.model_name = args.model_name
             self.tokenizer = transformers.AutoTokenizer.from_pretrained("google/mt5-xl", cache_dir="/mnt/gemini/data1/yifengliu/model")
             self.model = models.MT5ForRegression.from_pretrained(
@@ -526,6 +542,7 @@ class RewardModelProxy:
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer, padding=True),
             )
         elif 'Comet' in args.model_name:
+          self.min_reward = 0
           from comet import load_from_checkpoint, download_model
           self.model_name = args.model_name
           self.max_length = args.max_len
@@ -616,14 +633,13 @@ class RewardModelProxy:
         extra_logs = {}
         extra_logs['metric_score'] = sum(scores) / len(scores)
         if self.args.rule:
-          min_reward = -25 if 'metricX' in self.model_name else 0
           new_scores = []
           cnt = 0
           for score, tgt in zip(scores, tgts):
             # print(tgt, '\n' in tgt)
             if "\n" in tgt:
               cnt += 1
-              new_scores.append(min_reward)
+              new_scores.append(self.min_reward)
             else:
               new_scores.append(score)
           scores = new_scores
@@ -633,10 +649,9 @@ class RewardModelProxy:
           self.length_tokenizer = AutoTokenizer.from_pretrained("/mnt/gemini/data1/yifengliu/model/Qwen3-4B")
           src_length = self.length_tokenizer(srcs)['input_ids']
           tgt_length = self.length_tokenizer(tgts)['input_ids']
-          min_reward = -25 if 'metricX' in self.model_name else 0
-          # min_reward = -float('inf')
+      
           ratio_list = [len(tgt)/len(src) for src, tgt in zip(src_length, tgt_length)]
-          new_score_list = [float('inf') if (1.3 <= ratio <= 3) else min_reward for ratio in ratio_list]
+          new_score_list = [float('inf') if (1.3 <= ratio <= 3) else self.min_reward for ratio in ratio_list]
           scores = [min(score, new_score) for score, new_score in zip(scores, new_score_list)]
         if self.args.bleu:
           bleu_score_list = []
@@ -666,26 +681,47 @@ class RewardModelProxy:
           print(align_score_list[:20])
           scores = [score + align_score for score, align_score in zip(scores, align_score_list)]
           extra_logs['mean_align_score'] = sum(align_score_list) / len(align_score_list)
+        # if self.args.lang_detect:
+        #   pattern = r"Translate from ([^\n<]+) to ([^\n<]+):"
+        #   target_languages = [re.search(pattern, query).group(2).strip() for query in queries if re.search(pattern, query)]
+        #   tgts = [tgt.replace("\n", "") for tgt in tgts]
+        #   lang_info = self.lang_detect_model.predict(tgts)
+        #   min_reward = -25 if 'metricX' in self.model_name else 0
+        #   detect_rewards = []
+        #   cnt = 0
+        #   for language, tgt in zip(lang_info[0], target_languages):
+        #     lang_code = language[0].replace("__label__", "")
+        #     pred_lang = lang_dict.get(lang_code, "")
+        #     print(language, tgt, pred_lang, pred_lang == tgt)
+        #     if pred_lang == tgt:
+        #       detect_rewards.append(float('inf'))
+        #     else:
+        #       cnt += 1
+        #       detect_rewards.append(min_reward)
         if self.args.lang_detect:
           pattern = r"Translate from ([^\n<]+) to ([^\n<]+):"
           target_languages = [re.search(pattern, query).group(2).strip() for query in queries if re.search(pattern, query)]
           tgts = [tgt.replace("\n", "") for tgt in tgts]
-          lang_info = self.lang_detect_model.predict(tgts)
-          min_reward = -25 if 'metricX' in self.model_name else 0
-          detect_rewards = []
-          cnt = 0
-          for language, tgt in zip(lang_info[0], target_languages):
-            lang_code = language[0].replace("__label__", "")
-            pred_lang = lang_dict.get(lang_code, "")
-            print(language, tgt, pred_lang, pred_lang == tgt)
-            if pred_lang == tgt:
-              detect_rewards.append(float('inf'))
-            else:
-              cnt += 1
-              detect_rewards.append(min_reward)
+          translations = []
+          for tgt, tgt_lang in zip(tgts, target_languages):
+            ans = self.lang_detect_model.predict_codeswitch(tgt, beta = 20 , alpha = 3, max_lambda = 3, min_length = 10, min_prob = 0.90, max_retry=3, alpha_step_increase = 3, beta_step_increase = 5)
+            ans = {key.replace("__label__", ""): value for key, value in ans.items()}
+            long_lang_id = lang2long.get(tgt_lang, None)
+            if long_lang_id is None:
+              raise ValueError(f"Language code {long_lang_id} not found in lang2long.")
+            lang_translation = ans.get(long_lang_id, None)
+            # print(tgt_lang, long_lang_id, ans, lang_translation)
+            if lang_translation is None:
+              lang_translation = ""
+            translations.append(lang_translation)
+          original_token_length = [len(self.base_tokenizer(tgt)['input_ids']) for tgt in tgts]
+          detect_token_length = [len(self.base_tokenizer(translation)['input_ids']) for translation in translations]
+          ratio_list = [detect_len / orig_len for detect_len, orig_len in zip(detect_token_length, original_token_length) if orig_len > 0]
+          detect_rewards = [self.min_reward if ratio < 0.94 else float('inf') for ratio in ratio_list]
           scores = [min(score, detect_reward) for score, detect_reward in zip(scores, detect_rewards)]
-          logger.info(lang_info[0][:20])
-          extra_logs['lang_penalty_percent'] = cnt / len(tgts)
+          # logger.info(lang_info[0][:20])
+          logger.info(detect_rewards[:20])
+          extra_logs['lang_penalty_percent'] = len([reward for reward in detect_rewards if reward == self.min_reward ]) / len(tgts)
           # import code; code.interact(local=locals())
         return scores, extra_logs
 

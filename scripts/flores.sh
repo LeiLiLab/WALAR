@@ -1,30 +1,72 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=2
 declare -A model_path
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 
 model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
+model_path["llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
 model_path["Qwen-base"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B-Base"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Seq-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step280_hf"
 model_path["nllb"]="/mnt/gemini/data1/yifengliu/model/nllb-200-distilled-1.3B"
 # Back-Translation-0.125-Qwen3-4B-en-zh-1M-bsz128/global_step380_hf
 # /mnt/gemini/data1/yifengliu/checkpoints/Back-Translation-0.06-Qwen3-4B-en-zh-1M-bsz128/global_step120_hf
 # zho_simpl, zho_trad, swh, tam, asm
-MODEL_NAME="Qwen"
+MODEL_NAME="llama"
 MODEL_PATH=${model_path[$MODEL_NAME]}
 # LANG_PAIR="eng-asm"
 # src="zho_simpl"
+# src="ben"
 src="eng"
+# source_language_list=(
+#     "deu"
+# )
 # src="eng"
 target_language_list=(
-    # "zho_simpl"
-    # "deu"
-    # "ara"
-    # "pol"
-    # "ces"
-    # "hin"
-    # "hin"
+    "isl"
+    "ltz"
+    "bel"
+    "ces"
+    "mkd"
+    "pol"
+    "srp"
+    "slk"
+    "slv"
+    "ukr"
+    "ben"
+    "guj"
+    "hin"
+    "mar"
+    "npi"
+    "pan"
+    "urd"
+    "hye"
+    "ell"
+    "lav"
+    "lit"
+    "fas"
+    "cym"
+    "ceb"
+    "tgl"
+    "jav"
+    "ara"
+    "azj"
+    "kaz"
+    "tur"
+    "uzb"
+    "kan"
+    "mal"
+    "tam"
+    "tel"
     "mya"
+    "est"
+    "fin"
+    "hun"
+    "kat"
+    "heb"
+    "khm"
+    "kor"
+    "lao"
+
     # "ltz"
     # "mkd"
     # "pol"
@@ -39,13 +81,12 @@ target_language_list=(
     # "hye"
     # "ell"
     # "lav"
-    # "lit" 
-    # "fas" 
-    # "tgl" 
-    # "jav" 
-    # "ara" 
-    # "tur" 
-    # "tam" 
+    # "lit"
+    # "fas"
+    # "tgl"
+    # "jav"
+    # "tur"
+    # "tam"
     # "fin"
     
     # "ben"
@@ -192,6 +233,8 @@ INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest"
 if [ $MODEL_NAME == "Qwen" ]; then
     relative_path=${MODEL_PATH#*/model/}
 elif [ $MODEL_NAME == "Qwen-base" ]; then
+    relative_path=${MODEL_PATH#*/model/}
+elif [ $MODEL_NAME == "Llama" ]; then
     relative_path=${MODEL_PATH#*/model/}
 else
     relative_path=${MODEL_PATH#*/checkpoints/}
