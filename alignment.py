@@ -651,57 +651,35 @@ from hanlp_restful import HanLPClient
 # tgt = "恐龙的羽毛并没有发育良好的主干——这称为“羽轴”，但还是有羽毛的其他特征，比如羽枝和羽小枝，研究人员推断羽轴的进化可能比这些其他特征晚。"
 
 src_lang = "eng"
-tgt_lang = "orm"
+tgt_lang = "hin"
 src_path = f"/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest/{src_lang}.devtest"
 tgt_path = f"/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest/{tgt_lang}.devtest"
 src_dataset, tgt_dataset = load_flores(src_path), load_flores(tgt_path)
 
+src_dataset = [src.split() for src in src_dataset]
+tgt_dataset = [tgt.split() for tgt in tgt_dataset]
 # import code; code.interact(local=locals())
 
+# model = BGEM3FlagModel("/mnt/gemini/data1/yifengliu/model/bge-m3", use_fp16=True)
+# sentences_1 = ["Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the clinical and scientific division of the Canadian Diabetes Association cautioned that the research is still in its early days."]
+# sentences_2 = ["Dr. Ehud Ur，来自Dalhousie大学的医学教授，同时也是加拿大糖尿病协会的临床和科学委员会主席。他强调，目前的研究还处于初级阶段。尽管如此，他指出，尽管研究的范围有限，但其重要性不容忽视。糖尿病是一种复杂的疾病，其病因、发病机制以及治疗方案等都尚未完全阐明。因此，深入研究和探索糖尿病的病因和治疗策略对于提高糖尿病患者的生活质量、降低疾病负担以及促进全球糖尿病研究的发展都具有重要意义。Dr. Ur强调，尽管研究还处于初级阶段，但其对于推动糖尿病医学领域的进步具有不可替代的作用。他建议，未来的研究应更加深入地探索糖尿病的发病机制、治疗策略以及相关因素，以期能够更有效地控制糖尿病，提高糖尿病患者的生活质量。\n中文翻译：\nDr. Ehud Ur，来自Dalhousie大学的医学教授，同时也是加拿大糖尿病协会的临床和科学委员会主席。他强调，目前的研究还处于初级阶段。尽管如此，他指出，尽管研究的范围有限，但其重要性不容忽视。糖尿病是一种复杂的疾病，其病因、发病机制以及治疗方案等都尚未完全阐明。因此，深入研究和探索糖尿病的病因和治疗策略对于提高糖尿病患者的生活质量、降低疾病负担以及促进全球糖尿病研究的发展都具有重要意义。Dr. Ur强调，尽管研究还处于初级阶段，但其对于推动糖尿病医学领域的进步具有不可替代的作用。他建议，未来的研究应更加深入地探索糖尿病的发病机制、治疗策略以及相关因素，以期能够更有效地控制糖尿病，提高糖尿病患者的生活质量。"]
 
-# src_dataset = HanLP1(src_dataset)['tok']
-# src_dataset = [[c for c in src if c not in [",", "\"", ".", '—', "(", ")", "/", "\\", "'"]]for src in src_dataset]
-# tgt_dataset = HanLP2(tgt_dataset)
-# tgt_dataset = [[c for c in tgt if c not in ["：", "。", "，", "“", "”", "（", "）", "·", "-", "/", "\\", "、"]]for tgt in tgt_dataset]
-# src_dataset = ["Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the clinical and scientific division of the Canadian Diabetes Association cautioned that the research is still in its early days."]
-# tgt_dataset = ["Dr. Ehud Ur, Professor von Medizin in Dalhousie Universität in Halifax, Nova Scotia und Stuhl von die klinisch und wissenschaftlich Division von die Kanadisch Diabetes Assoziation, vorsichtig dass die Forschung ist noch in seine frühe Tagen."]
-# tgt_dataset = ["Den Dr. Ehud Earl, President vun der Clinical and Research Division vun der Canadian Diabetes Association a Professer op der Fakultéit fir Medizin vun der Dalhousie University zu Halifax, huet drop higewisen, datt dës Fuerschung nach an hire Virstadien ass a weider grëndlech Diskussioun brauch."]
-# tgt_dataset = ["Den Dr. Ehud Earle, President vun der klinescher Fuerschung bei der Canadian Diabetes Association a Professer op der Dalhousie University School of Medicine zu Halifax, huet bemierkt, datt d'Fuerschung nach ëmmer am Ufank ass."]
-# src_dataset = ["On Monday, Sara Danius, permanent secretary of the Nobel Committee for Literature at the Swedish Academy, publicly announced during a radio program on Sveriges Radio in Sweden the committee, unable to reach Bob Dylan directly about winning the 2016 Nobel Prize in Literature, had abandoned its efforts to reach him."]
-# tgt_dataset = ["Méindes huet d'Sara Danius, Sekretärin vum Nobelpräis fir Literaturcomité zu Stockholm a Schweden, an enger Sendung um schwedesche Sender Sveriges Radio ugekënnegt, datt de Comité decidéiert huet, opzeginn, de Kontakt mam Bob Dylan opzehuelen, fir ze bestätegen, ob hien tatsächlech den Nobelpräis fir Literatur 2016 gewonnen huet, well se hien net direkt kontaktéiere konnten. Virdrun hat de Comité schonn e puermol probéiert, den Dylan iwwer verschidde Mëttelen ze kontaktéieren, awer all Versich waren erfolleglos."]
-# src_dataset = ["Because the dinosaur feathers do not have a well-developed shaft, called a rachis, but do have other features of feathers — barbs and barbules — the researchers inferred the rachis was likely a later evolutionary development that these other features."]
-# tgt_dataset = ["Well Dinosaurierfiedere keng typesch Rachis hunn, de zentrale Schaft, deen duerch déi ganz Struktur vun der Fieder leeft, awer ëmmer nach déi grondleeënd Charakteristike vu Fiederen hunn, wéi z. B. Schläger a Filamenter, schléissen d'Fuerscher dovun of, datt d'Rachis-Struktur sech spéider graduell entwéckelt huet, während aner Eegeschafte wéi Schläger a Filamenter schonn fréier existéiert hunn."]
-# tgt_dataset = ["Dinosaurierfiedere haten kee gutt entwéckelten Haaptstiel, genannt Rauchstiel, awer haten ëmmer nach aner Fiedercharakteristiken, wéi Barbelen a Barbelen, an d'Fuerscher schléissen dovun aus, datt d'Rauchstiel sech spéider wéi dës aner Charakteristiken entwéckelt huet."]
+# embeddings_1 = model.encode(sentences_1, 
+#                             batch_size=12, 
+#                             max_length=8192, # If you don't need such a long length, you can set a smaller value to speed up the encoding process.
+#                             )['dense_vecs']
+# embeddings_2 = model.encode(sentences_2)['dense_vecs']
+# similarity = embeddings_1 @ embeddings_2.T
+# print(similarity)
 
-# src_dataset = ["\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added."]
-# tgt_dataset = ["\"Artı, 4 ay yaşındakı non-diabetik mişklər var ki, əvvəl diabetik olublar,\" deyib."]
-# tgt_dataset = ["\"Hazırda bizim diabetdən əziyyət çəkməyən, amma əvvəl diabet olan 4 aylıq siçanlarımız var\", deyə o əlavə etdi."]
-
-# src_dataset = ["On Monday, Sara Danius, permanent secretary of the Nobel Committee for Literature at the Swedish Academy, publicly announced during a radio program on Sveriges Radio in Sweden the committee, unable to reach Bob Dylan directly about winning the 2016 Nobel Prize in Literature, had abandoned its efforts to reach him."]
-# tgt_dataset = ["সোমবারে, সারা ডানিউস, স্বেডিশ একাডেমির লিটারেচার কমিটির প্রতিনিধি, স্বেডিশ রেডিও (Sveriges Radio) এর একটি রেডি প্রোগ্রামে ঘোষণা করেন যে কমিটি বোব ডালনকে ডাকার চেষ্টা করেছিল কিন্তু তাঁর সাথে যোগাযোগ করতে সক্ষম হতে পারেনি, তাই তাঁর সাথে যোগাযোগের চেষ্টা বন্ধ করে দেয়া হয়েছে। 2016 সালের লিটারেচার নোবেল পুরস্কারের জন্য এই কমিটি তাঁকে প্রাপ্ত হও য়ার বিষয়ে তাঁর সাথে যোগাযোগ করার চেষ্টা করেছিল কিন্তু সম্ভবত তা সম্পূর্ণ অসম্ভব হয়ে গেছে।"]
-# tgt_dataset = ['সোমবার, সুইডেনের সেভিরস রেডিওতে একটি অনুষ্ঠানের সময় সুইডিশ অ্যাকাডেমিতে সাহিত্যের নোবেল কমিটির স্থায়ী সচিব, সারা ডনিয়াস,  প্রকাশ্যে ঘোষণা করেছিলেন যে কমিটি, ২০১৬ সালে সাহিত্যে নোবেল পুরস্কার পাওয়ার বিষয়ে বব ডিলানের সঙ্গে সরাসরিযোগাযোগ করতে না পেরে, তাঁর কাছে পৌঁছানোর প্রচেষ্টা ত্যাগ করেছিল।']
-# src_dataset = ["\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added."]
-# tgt_dataset = ["他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”\n中文翻译：\n他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”"]
-# src_dataset = [src.split() for src in src_dataset]
-# tgt_dataset = [tgt.split() for tgt in tgt_dataset]
-model = BGEM3FlagModel("/mnt/gemini/data1/yifengliu/model/bge-m3", use_fp16=True)
-sentences_1 = ["Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the clinical and scientific division of the Canadian Diabetes Association cautioned that the research is still in its early days."]
-sentences_2 = ["Dr. Ehud Ur，来自Dalhousie大学的医学教授，同时也是加拿大糖尿病协会的临床和科学委员会主席。他强调，目前的研究还处于初级阶段。尽管如此，他指出，尽管研究的范围有限，但其重要性不容忽视。糖尿病是一种复杂的疾病，其病因、发病机制以及治疗方案等都尚未完全阐明。因此，深入研究和探索糖尿病的病因和治疗策略对于提高糖尿病患者的生活质量、降低疾病负担以及促进全球糖尿病研究的发展都具有重要意义。Dr. Ur强调，尽管研究还处于初级阶段，但其对于推动糖尿病医学领域的进步具有不可替代的作用。他建议，未来的研究应更加深入地探索糖尿病的发病机制、治疗策略以及相关因素，以期能够更有效地控制糖尿病，提高糖尿病患者的生活质量。\n中文翻译：\nDr. Ehud Ur，来自Dalhousie大学的医学教授，同时也是加拿大糖尿病协会的临床和科学委员会主席。他强调，目前的研究还处于初级阶段。尽管如此，他指出，尽管研究的范围有限，但其重要性不容忽视。糖尿病是一种复杂的疾病，其病因、发病机制以及治疗方案等都尚未完全阐明。因此，深入研究和探索糖尿病的病因和治疗策略对于提高糖尿病患者的生活质量、降低疾病负担以及促进全球糖尿病研究的发展都具有重要意义。Dr. Ur强调，尽管研究还处于初级阶段，但其对于推动糖尿病医学领域的进步具有不可替代的作用。他建议，未来的研究应更加深入地探索糖尿病的发病机制、治疗策略以及相关因素，以期能够更有效地控制糖尿病，提高糖尿病患者的生活质量。"]
-
-embeddings_1 = model.encode(sentences_1, 
-                            batch_size=12, 
-                            max_length=8192, # If you don't need such a long length, you can set a smaller value to speed up the encoding process.
-                            )['dense_vecs']
-embeddings_2 = model.encode(sentences_2)['dense_vecs']
-similarity = embeddings_1 @ embeddings_2.T
-print(similarity)
 # src_dataset, tgt_dataset = src_dataset[-1:], tgt_dataset[-1:]  # for test
-# align_score_list = align_score(src_dataset, tgt_dataset, model, tokenizer)
+align_score_list = align_score5(src_dataset, tgt_dataset, model, tokenizer)
 # align_score_list = align_score5(src_dataset, tgt_dataset, model, tokenizer, batch_size=16)
 
 # align_score_list = align_score4(src_dataset, tgt_dataset, model, tokenizer, batch_size=16)
 # align_score_list = align_score3(src_dataset, tgt_dataset, model, tokenizer, batch_size=1024)
-import code; code.interact(local=locals())
+
+
 # myaligner = SentenceAligner(model="bge-m3", token_type="bpe", matching_methods="mai")
 
 # # The source and target sentences should be tokenized to words.

@@ -7,7 +7,7 @@ eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python
 source /mnt/gemini/home/yifengliu/miniconda3/bin/activate qe-rl
 
-model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen2.5-3B-Instruct"
+model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
 model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step150_hf"
 
 # /mnt/gemini/data1/yifengliu/checkpoints/Qwen2.5-0.5B-En-Zh-1M-bsz128/global_step140_hf
@@ -30,103 +30,50 @@ PORT=2222
 MAX_TOKENS=512
 source_language="eng"
 target_language_list=(
-    # "kan"
-    # "mal"
-    # "tel"
+    "isl"
     # "ltz"
-    # "ast"
-    # "oci"
-
-    # "bos"
-    # "hrv"
-    # "mkd"
-    # "pol"
-    # "srp"    
+    "bel"
+    "ces"
+    "mkd"
+    "pol"
+    # "srp"
     # "slk"
     # "slv"
-
-    # "ben"
+    "ukr"
+    "ben"
     # "guj"
     # "hin"
-    # "ind"
-    # "msa"
-    # "mar"
-
-    # "afr"
-    # "fra"
-    
-    # "bos"
-    # "slv"
-    
-    # "npi"
-
-    # "orm"
-
-    "zho_simpl"
-    # "deu"
-    # "spa"
-    # "rus"
-    # "jpn"
-    # "tam"
-
-    # "hin"
-    # "ara"
-    # "tur"
-
-    # "dan"
-    # "nld"
-    # "nob"
-    # "cat"
-    # "por"
-    # "ron"
-
-    # "bul"
-    # "hrv"
-    # "ces"
-    # "srp"
-    
-    # "guj"
-    # "npi"
-    # "pan"
-    # "snd"
-    # "urd"
-
+    "mar"
+    "npi"
+    "pan"
+    "urd"
+    # "hye"
     # "ell"
-    # "gle"
-
-    # "cym"
-    # "ita"
     # "lav"
     # "lit"
-    # "pus"
     # "fas"
-    # "ckb"
-    # "tgk"
-
+    "cym"
+    "ceb"
+    # "tgl"
     # "jav"
-    # "mri"
-
-    # "amh"
-    # "ful"
-    # "som"
-
-    # "azj"
-    # "kaz"
-    # "kir"
-    # "uzb"
-
-    # "est"
-    # "hun"
-    # "kat"
-    # "hau"
-    # "heb"
-    # "khm"
-    # "vie"
-    # "kor"
-    # "lao"
-    # "tha"
-    # "luo"
-    # "mon"
+    "ara"
+    "azj"
+    "kaz"
+    # "tur"
+    "uzb"
+    "kan"
+    "mal"
+    "tam"
+    "tel"
+    "mya"
+    "est"
+    # "fin"
+    "hun"
+    "kat"
+    "heb"
+    "khm"
+    "kor"
+    "lao"
 )
 # isl, ltz, ast, glg, oci, mkd, slk, asm, mar, hye, tgk, mlt
 # for train: tur
@@ -166,7 +113,7 @@ else
             --data_dir "$INPUT_DIR"\
             --lang_pair "$LANG_PAIR" \
             --max_tokens "$MAX_TOKENS" \
-            --comet22 True \
+            --comet22 False \
             --xcomet False \
             --output_file "$OUTPUT_FILE"\
             --port ${PORT}

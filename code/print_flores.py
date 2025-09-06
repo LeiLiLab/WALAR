@@ -1,5 +1,6 @@
 import json
 import os
+from utils import training_langs
 
 def print_result(file_path):
     bleu_score, xcomet_score = None, None
@@ -22,18 +23,42 @@ def print_result(file_path):
         print(f"{lang_pair}:\t{bleu_score}\t")
     return {lang_pair: (bleu_score, xcomet_score, metricx_score)}
     
+def check_result(file_path):
+    bleu_score, xcomet_score, metricx_score = None, None, None
+    with open(file_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            if 'spBLEU' in line: 
+                if bleu_score is not None:
+                    print(f"spBLEU: {file_path}")
+                    return
+                bleu_score = line.strip().split()[-1]
+            if 'XComet' in line:
+                if xcomet_score is not None:
+                    print(f"XComet: {file_path}")
+                    return
+                xcomet_score = line.strip().split()[-1]
+            if "MetricX" in line:
+                if metricx_score is not None:
+                    print(f"MetricX: {file_path}")
+                    return
+                metricx_score = line.strip().split()[-1]
+    return
 
 if __name__ == "__main__":
-    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf"
+    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
     # Walk through the directory and print all file paths
     whole_dict = {}
-    for root, dirs, files in os.walk(dir_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            whole_dict.update(print_result(file_path))
     src_lang = "eng"
-    tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
+    tgt_langs_i_care = training_langs
+    for root, dirs, files in os.walk(dir_path):
+        for tgt in tgt_langs_i_care:
+            file_path = os.path.join(root, f"{src_lang}-{tgt}.txt")
+            # file_path = os.path.join(root, file)
+            check_result(file_path)
+            whole_dict.update(print_result(file_path))
+    # tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
     # print(len(tgt_langs_i_care))
     print("Average spBLEU: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][0]) for tgt in tgt_langs_i_care])/len(tgt_langs_i_care))
     # print([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])
@@ -41,7 +66,7 @@ if __name__ == "__main__":
     print("Average XComet: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][1]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
     print("Average MetricX: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][2]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None]))
     # print the average here
-    import code; code.interact(local=locals())
+    # import code; code.interact(local=locals())
     # Below is only for copying purpose
     list_of_strings = []
     for tgt in tgt_langs_i_care:

@@ -23,7 +23,7 @@ src="en"
 tgt="mix-mid2"
 version="3"
 size="4B"
-reward_name="Seq-Rule-Detect-MetricX"
+reward_name="New-Detect-New-Align-Rule-MetricX"
 if [ "${#tgt}" -le 3]; then
     evaluation_step=10
 else
@@ -47,7 +47,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --vllm_tensor_parallel_size 1 \
     --colocate_actor_ref \
     --ref_reward_offload \
-    --pretrain /mnt/gemini/data1/yifengliu/checkpoints/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf \
+    --pretrain /mnt/gemini/data1/yifengliu/model/Qwen3-4B \
     --remote_rm_url http://localhost:2000/get_reward \
     --remote_comet_url http://localhost:5555/get_reward \
     --micro_train_batch_size 16 \
