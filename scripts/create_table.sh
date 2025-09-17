@@ -1,0 +1,1 @@
+python /mnt/gemini/data1/yifengliu/qe-lr/create_multi_model_table.py hin Qwen3-4B Llama-3.2-3B-Instruct

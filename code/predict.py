@@ -570,6 +570,7 @@ def process_single_language_pair(
       mean_score = sum(predictions) / len(predictions)
       if args.model_name == "metricX":
         f.write(f"MetricX Score: {mean_score:.4f}\n")
+        print(f"{args.src}-{args.tgt}: MetricX Score: {mean_score:.4f}")
       if args.model_name == "XComet":
         f.write(f"XComet Score: {mean_score:.4f}\n")
         print(f"{args.src}-{args.tgt}: XComet Score: {mean_score:.4f}")

@@ -4,7 +4,9 @@ source /mnt/gemini/data1/yifengliu/miniconda3/bin/activate qe-rl
 
 cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 
+# Llama
 base_model="Qwen3-4B"
+# base_model="Llama-3.2-3B-Instruct"
 lang_detect=True
 rule=True       # '\n' for metricX
 truncate=False  # length truncate

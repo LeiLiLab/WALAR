@@ -47,13 +47,15 @@ def check_result(file_path):
 
 if __name__ == "__main__":
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Seq-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step160_hf"
-    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Mask-Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step720_hf"
-    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Llama-3.2-3B-Instruct"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Test-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step620_hf"
+    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
     # Walk through the directory and print all file paths
     whole_dict = {}
     src_lang = "eng"
     # tgt_langs_i_care = training_langs
     tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
+    tgt_langs_i_care = [tgt for tgt in tgt_langs_i_care if tgt != src_lang]
     print(f"Direction\tspBLEU\tXComet\tMetricX")
     for root, dirs, files in os.walk(dir_path):
         for tgt in tgt_langs_i_care:
@@ -67,7 +69,7 @@ if __name__ == "__main__":
     # print(len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
     print("Average spBLEU: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][0]) for tgt in tgt_langs_i_care])/len(tgt_langs_i_care))
     print("Average XComet: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][1]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
-    # print("Average MetricX: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][2]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None]))
+    print("Average MetricX: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][2]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None]))
     
     # print the average here
     # import code; code.interact(local=locals())

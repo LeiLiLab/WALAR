@@ -22,6 +22,7 @@ def load_model_and_tokenizer(model_path):
             device_map='auto', # Automatically select device (GPU if available)
             torch_dtype=torch.float16 # Use half-precision for memory efficiency
         )
+        model.to('cuda' if torch.cuda.is_available() else 'cpu')
         # Set padding token if it's not already set
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
@@ -85,12 +86,14 @@ def apply_tsne(high_dim_vectors):
     return low_dim_vectors
 
 if __name__ == "__main__":
-    model_name = "Qwen3-4B"
+    # model_name = "Qwen3-4B"
+    model_name = "checkpoint"
     path_dict = {
         "Qwen3-4B": "/mnt/gemini/data1/yifengliu/model/Qwen3-4B",
-        "checkpoint": "/mnt/gemini/data1/yifengliu/checkpoints/New-Align-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step580_hf",
+        "checkpoint": "/mnt/gemini/data1/yifengliu/checkpoints/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf",
     }
-    language_list = ["eng", "ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "tur", "tam", "fin"]
+    # language_list = ["eng", "ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "tur", "tam", "fin"]
+    language_list = ["eng", "ltz"]
     tokenizer, model = load_model_and_tokenizer(path_dict[model_name])
     instructions, languages = load_instructions(language_list)
     language_map = {lang: i for i, lang in enumerate(language_list)}

@@ -19,12 +19,18 @@ export RAY_DEBUG_POST_MORTEM=1
 # cmu key
 wandb_token=e00b93c51b52fed0712d2130a4df508e9a41e95c
 
-src="en"
-tgt="mix-mid2"
+declare -A path_dict
+path_dict["Llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
+path_dict["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
+
+model="Qwen"
+src="final"
+tgt="final"
+dataname="final_mix-160k"
 version="3"
 size="4B"
-reward_name="Test"
-if [ "${#tgt}" -le 3]; then
+reward_name="Final"
+if [ "${#tgt}" -le 3 ]; then
     evaluation_step=10
 else
     evaluation_step=100000
@@ -48,7 +54,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --colocate_all_models \
     --vllm_gpu_memory_utilization 0.7 \
     --ref_reward_offload \
-    --pretrain /mnt/gemini/data1/yifengliu/model/Qwen3-4B \
+    --pretrain ${path_dict[$model]} \
     --remote_rm_url http://localhost:2000/get_reward \
     --remote_comet_url http://localhost:5555/get_reward \
     --micro_train_batch_size 16 \
@@ -56,7 +62,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --micro_rollout_batch_size 16 \
     --rollout_batch_size 128 \
     --n_samples_per_prompt 8 \
-    --max_samples 100000 \
+    --max_samples 200000 \
     --max_epochs 1 \
     --prompt_max_len 1024 \
     --generate_max_len 1024 \
@@ -68,7 +74,7 @@ ray job submit --address="http://127.0.0.1:8265" \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --advantage_estimator group_norm \
-    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/3base_${src}-${tgt}-1m.jsonl \
+    --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/${dataname}.jsonl \
     --src ${src} \
     --tgt ${tgt} \
     --eval_dir "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev" \
@@ -84,12 +90,12 @@ ray job submit --address="http://127.0.0.1:8265" \
     --gradient_checkpointing \
     --temperature 1 \
     --save_steps 20 \
-    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-Qwen${version}-${size}-${src}-${tgt}-1M-bsz128 \
-    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-Qwen${version}-${size}-${src}-${tgt}-1M-bsz128 \
+    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
+    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
     --load_checkpoint \
     --save_hf_ckpt \
     --use_wandb ${wandb_token}\
-    --wandb_run_name "${reward_name}-Qwen${version}-${size}-${src}-${tgt}-1M-bsz128" \
+    --wandb_run_name "${reward_name}-${model}${version}-${size}-${dataname}-bsz128" \
     --enforce_eager \
     --vllm_enable_sleep \
     --deepspeed_enable_sleep
