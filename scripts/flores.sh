@@ -7,7 +7,8 @@ model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
 model_path["llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
 model_path["Qwen-base"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B-Base"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/3New-Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step400_hf"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Seq-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step160_hf"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
+# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Test-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step700_hf"
 model_path["nllb"]="/mnt/gemini/data1/yifengliu/model/nllb-200-distilled-1.3B"
 
 # Configuration
@@ -83,6 +84,7 @@ target_language_list=(
     "pan"
     "hye"
     "ell"
+
     "lav"
     "lit"
     "fas"

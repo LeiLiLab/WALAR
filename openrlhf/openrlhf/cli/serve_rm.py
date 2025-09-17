@@ -591,14 +591,20 @@ class RewardModelProxy:
         if "metricX" in self.model_name:
           with torch.no_grad():
               ds = []
-              src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
-              srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
-
+              if 'Qwen' in self.base_model:
+                src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
+                srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
+              else:
+                src_pattern = r"<\|start_header_id\|>user<\|end_header_id\|>\n\n(.*?)Translate from (.*?) to (.*?):"
+                srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
               # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
               # tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>(.*?)<\|im_end\|>"
               if 'Qwen3' in self.base_model:
                 tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
                 tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in queries]
+              elif 'Llama' in self.base_model:
+                tgt_pattern = r"<\|start_header_id\|>assistant<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
+                tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]
               else:
                 tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
                 tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]
@@ -627,8 +633,12 @@ class RewardModelProxy:
               scores.extend(-predictions)
         elif 'Comet' in self.model_name:
           ds = []
-          src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
-          srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
+          if 'Qwen' in self.base_model:
+            src_pattern = r"<\|im_start\|>user\n(.*?)Translate from (.*?) to (.*?):"
+            srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
+          else:
+            src_pattern = r"<\|start_header_id\|>user<\|end_header_id\|>\n\n(.*?)Translate from (.*?) to (.*?):"
+            srcs = [re.search(src_pattern, q, re.DOTALL).group(1).strip() for q in queries]
 
           # Match tgt between "<|im_start|>assistant\n" and "<|im_end|>"
           # tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>(.*?)<\|im_end\|>"
@@ -636,6 +646,9 @@ class RewardModelProxy:
           if 'Qwen3' in self.base_model:
             tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
             tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in queries]
+          elif 'Llama' in self.base_model:
+            tgt_pattern = r"<\|start_header_id\|>assistant<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
+            tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]
           else:
             tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
             tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]
@@ -728,6 +741,9 @@ class RewardModelProxy:
           if 'Qwen3' in self.base_model:
             tgt_pattern = r"<\|im_start\|>assistant\n<think>(.*?)</think>\n\n(.*?)<\|im_end\|>"
             tgts = [re.search(tgt_pattern, q, re.DOTALL).group(2).strip() for q in queries]
+          elif 'Llama' in self.base_model:
+            tgt_pattern = r"<\|start_header_id\|>assistant<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
+            tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]
           else:
             tgt_pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
             tgts = [re.search(tgt_pattern, q, re.DOTALL).group(1).strip() for q in queries]

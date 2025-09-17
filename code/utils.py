@@ -236,6 +236,7 @@ lang_detection_langs = ["af", "als", "am", "an", "ar", "arz", "as", "ast", "av",
 training_langs = ["isl", "ltz", "bel", "ces", "mkd", "pol", "srp", "slk", "slv", "ukr", "ben", "guj", "hin", "mar", "npi", "pan", "urd", "hye", "ell", "cym", "lav", "lit", "fas", "ceb", "tgl", "jav", "ara", "azj", "kaz", "tur", "uzb", "kan", "mal", "tam", "tel", "mya", "est", "fin", "hun", "kat", "heb", "khm", "kor", "lao", "tha"]
 
 training_langs2 = ["isl", "ltz", "bel", "ces", "mkd", "pol", "slk", "slv", "ukr", "ben", "guj", "hin", "mar", "npi", "pan", "urd", "hye", "ell", "cym", "lav", "lit", "fas", "ceb", "tgl", "jav", "ara", "azj", "tur", "uzb", "kan", "mal", "tam", "tel", "est", "fin", "hun", "kat", "heb", "khm", "kor", "tha"]
+
 # we only care about the 
 long2lang = {
   "isl_Latn": "Icelandic",
@@ -283,6 +284,7 @@ long2lang = {
   "kor_Hang": "Korean",
   "lao_Laoo": "Lao",
   "fil_Latn": "Filipino",
+  "tha_Thai": "Thai",
 }
 
 lang2long = {v: k for k, v in long2lang.items()}

@@ -3,8 +3,8 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/code
 
 # Default values
 data_name="flores"
-model_name="XComet"
-model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
+model_name="metricX"
+model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
 batch_size=16 ### Should be divisible by the number of GPUs
 
@@ -66,7 +66,7 @@ process_language_pairs() {
       input_file_pattern="/mnt/gemini/data1/yifengliu/data/low-res"
       ;;
     "flores")
-      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step500_hf"
+      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
       ;;
   esac
   

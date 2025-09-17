@@ -10,21 +10,27 @@ from transformers import AutoTokenizer
 
 # Language code to language name mapping table
 
-def get_langs(args):
-    src, tgt = args.src, args.tgt
-    src_lang, tgt_lang = mm_dict.get(src, ''), mm_dict.get(tgt, '')
+# def get_langs(args):
+#     src, tgt = args.src, args.tgt
+#     src_lang, tgt_lang = mm_dict.get(src, ''), mm_dict.get(tgt, '')
+#     if len(src_lang) == 0:
+#         src_lang = lang_dict.get(src, '')
+#     if len(tgt_lang) == 0:
+#         tgt_lang = lang_dict.get(tgt, '')
+#     # The case for IndicMT
+#     if tgt_lang == '':
+#         tgt_lang = args.tgt.capitalize()
+#         # raise ValueError(f"Unsupported language codes: {src}, {tgt}")
+#     # print(f"Source language: {src_lang}, Target language: {tgt_lang}")
+#     # import code; code.interact(local=locals())
+#     return src_lang, tgt_lang
+def get_lang(lang_code):
+    src_lang = mm_dict.get(lang_code, '')
     if len(src_lang) == 0:
-        src_lang = lang_dict.get(src, '')
-    if len(tgt_lang) == 0:
-        tgt_lang = lang_dict.get(tgt, '')
-    # The case for IndicMT
-    if tgt_lang == '':
-        tgt_lang = args.tgt.capitalize()
-        # raise ValueError(f"Unsupported language codes: {src}, {tgt}")
-    # print(f"Source language: {src_lang}, Target language: {tgt_lang}")
-    # import code; code.interact(local=locals())
-    return src_lang, tgt_lang
-
+        src_lang = lang_dict.get(lang_code, '')
+    if src_lang == '':
+        src_lang = lang_code.capitalize()
+    return src_lang
 
 def make_prompt(source, src, tgt, template_type='chat', tokenizer=None):
     if template_type == 'base':
@@ -85,7 +91,8 @@ def main():
             source = example['src']
             lg = args.src + "-" + args.tgt
             # Generate prefix
-            src_lang, tgt_lang = get_langs(args)
+            # src_lang, tgt_lang = get_langs(args)
+            src_lang, tgt_lang = get_lang(args.src), get_lang(args.tgt)
             prompt = make_prompt(source, src_lang, tgt_lang, template_type=args.template_type)
             
             data = {
