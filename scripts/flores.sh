@@ -1,18 +1,23 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=6
 declare -A model_path
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 
-model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
+model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-8B"
+model_path["Qwen3X"]="/mnt/gemini/data1/yifengliu/model/Qwen3-XPlus-8B"
 model_path["llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
+model_path["llamax"]="/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
 model_path["Qwen-base"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B-Base"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/3New-Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step400_hf"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
-# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Test-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step700_hf"
+# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Final-en-LlamaX3-8B-llamax_en-mix-1m-1M-bsz128/global_step80_hf"
+# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Final-mix-LlamaX3-8B-final_llamax_mix-1m-1M-bsz128/global_step50_hf"
+# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Final-Qwen3-4B-post_final_mix-320k-1M-bsz128"
+# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
 model_path["nllb"]="/mnt/gemini/data1/yifengliu/model/nllb-200-distilled-1.3B"
 
 # Configuration
-MODEL_NAME="checkpoint"
+MODEL_NAME="llama"
 MODEL_PATH=${model_path[$MODEL_NAME]}
 
 # Language configuration - can be set as single values or comma-separated lists
@@ -20,13 +25,13 @@ MODEL_PATH=${model_path[$MODEL_NAME]}
 LANG_PAIR=""  # Set this for single language pair evaluation
 
 # For multiple language pairs mode
-SOURCE_LANGUAGES="eng"  # Comma-separated list: "eng,deu,fra"
+SOURCE_LANGUAGES="tur"  # Comma-separated list: "eng,deu,fra"
 # TARGET_LANGUAGES="ben,guj,hin,mar,pan,hye,ell,lav,lit,fas,tgl,jav,ara,tur,tam,fin"  # Comma-separated list
 
 # Legacy target_language_list for backward compatibility (will be converted to TARGET_LANGUAGES if not set)
 target_language_list=(
     # "isl"
-    # "ltz"
+    "ltz"
     # "bel"
     # "ces"
     # "mkd"
@@ -71,29 +76,76 @@ target_language_list=(
     # "lao"
     # "tha"
 
-    "ltz"
-    "mkd"
-    "pol"
-    "srp"
-    "slk"
-    "slv"
-    "ben"
-    "guj"
-    "hin"
-    "mar"
-    "pan"
-    "hye"
-    "ell"
+    # "zho_simpl"
+    # "deu"
+    # "spa"
+    # "rus"
+    # "afr"
+    # "dan"
+    # "swe"
+    # "cat"
+    # "fra"
+    # "por"
+    # "ron"
+    # "glg"
+    # "ita"
+    # "ind"
+    # "msa"
+    # "ltz"
+    # "tha"
+    
+    # 'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn' 'vie'
+    # "ltz"
+    # "mkd"
+    # "pol"
+    # "srp"
+    # "slk"
+    # "slv"
+    # "ben"
+    # "guj"
+    # "hin"
+    # "mar"
+    # "pan"
+    # "hye"
+    # "ell"
+    # "lav"
+    # "lit"
+    # "fas"
+    # "tgl"
+    # "jav"
+    # "ara"
+    # "tur"
+    # "tam"
+    # "fin"
 
-    "lav"
-    "lit"
-    "fas"
-    "tgl"
-    "jav"
-    "ara"
-    "tur"
-    "tam"
-    "fin"
+    # 'amh'
+    # 'azj'
+    # 'bel'
+    # 'isl'
+    # 'jav'
+    # 'khm'
+    # 'kan'
+    # 'kor'
+    # 'kir'
+    # 'lao'
+    # 'lit'
+    # 'mal'
+    # 'mon'
+    # 'mar'
+    # 'mya'
+    # 'pol'
+    # 'pus'
+    # 'snd'
+    # 'som'
+    # 'srp'
+    # 'tam'
+    # 'tha'
+    # 'tur'
+    # 'yor'
+
+    # 'slv'
+    # 'slk'
+    # 'rus'
     
     # "ben"
     # "ces"
@@ -241,7 +293,11 @@ if [ $MODEL_NAME == "Qwen" ]; then
     relative_path=${MODEL_PATH#*/model/}
 elif [ $MODEL_NAME == "Qwen-base" ]; then
     relative_path=${MODEL_PATH#*/model/}
+elif [ $MODEL_NAME == "Qwen3X" ]; then
+    relative_path=${MODEL_PATH#*/model/}
 elif [ $MODEL_NAME == "llama" ]; then
+    relative_path=${MODEL_PATH#*/model/}
+elif [ $MODEL_NAME == "llamax" ]; then
     relative_path=${MODEL_PATH#*/model/}
 else
     relative_path=${MODEL_PATH#*/checkpoints/}
@@ -295,7 +351,7 @@ elif [ -n "$SOURCE_LANGUAGES" ] && [ -n "$TARGET_LANGUAGES" ]; then
         --data_dir "$INPUT_DIR" \
         --source_languages "$SOURCE_LANGUAGES" \
         --target_languages "$TARGET_LANGUAGES" \
-        --comet22 True \
+        --comet22 False \
         --xcomet False \
         --tensor_parallel_size $num_gpus \
         --output_dir "$OUTPUT_DIR"

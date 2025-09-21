@@ -1,6 +1,6 @@
 import json
 import os
-from utils import training_langs
+from utils import training_langs, training_langs2, llamax_langs, qwen_support
 
 def print_result(file_path):
     bleu_score, xcomet_score = None, None
@@ -47,14 +47,22 @@ def check_result(file_path):
 
 if __name__ == "__main__":
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Seq-Rule-Detect-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step160_hf"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Final-Qwen3-4B-final_mix-160k-1M-bsz128/global_step1240_hf"
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Test-Qwen3-4B-ar-mix-mid2-1M-bsz128/global_step620_hf"
-    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Final-Qwen3-4B-post_final_mix-320k-1M-bsz128"
     # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Llama-3.2-3B-Instruct"
+    dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
+    # dir_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B-Instruct-2507"
     # Walk through the directory and print all file paths
     whole_dict = {}
-    src_lang = "eng"
-    # tgt_langs_i_care = training_langs
-    tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
+    src_lang = "ara"
+    xcomet_not_support_list = ["ltz", "ceb"]
+    tgt_langs_i_care = training_langs2
+    # tgt_langs_i_care = qwen_support
+    # import code; code.interact(local=locals())
+    # tgt_langs_i_care = llamax_langs
+    # tgt_langs_i_care = ["ltz", "mkd","pol","srp","slk","slv","ben","guj","hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "ara", "tur", "tam", "fin"]
     tgt_langs_i_care = [tgt for tgt in tgt_langs_i_care if tgt != src_lang]
     print(f"Direction\tspBLEU\tXComet\tMetricX")
     for root, dirs, files in os.walk(dir_path):
@@ -67,8 +75,9 @@ if __name__ == "__main__":
     # import code; code.interact(local=locals())
     # print([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])
     # print(len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
+    # import code; code.interact(local=locals())
     print("Average spBLEU: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][0]) for tgt in tgt_langs_i_care])/len(tgt_langs_i_care))
-    print("Average XComet: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][1]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None]))
+    print("Average XComet: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][1]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None and tgt not in xcomet_not_support_list])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][1] is not None and tgt not in xcomet_not_support_list]))
     print("Average MetricX: ", sum([float(whole_dict[f"{src_lang}-{tgt}"][2]) for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None])/len([tgt for tgt in tgt_langs_i_care if whole_dict[f"{src_lang}-{tgt}"][2] is not None]))
     
     # print the average here

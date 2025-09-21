@@ -26,7 +26,10 @@ def load_dataset(file_path):
     dataset = []
     with open(file_path, 'r') as f:
         for line in f:
-            dataset.append(json.loads(line.strip()))
+            try:
+                dataset.append(json.loads(line.strip()))
+            except:
+                break
     return dataset
 
 def get_spBLEU(hyps, refs):
@@ -115,15 +118,69 @@ if __name__ == "__main__":
 
     # 26.0056
     # dataset = []
-    lang_list = ["en", "ar", "tr", "hi"]
-    final_mix_dataset = []
-    save_path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/final_mix-1m.jsonl"
+    # lang_list = ["en", "ar", "tr", "hi"]
+    # final_mix_dataset = []
+    # # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Final-en-LlamaX3-8B-llamax_en-mix-1m-1M-bsz128/global_step40_hf/eng-srp.txt"
+    # # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/output/flores/LLaMAX3-8B-Alpaca/eng-srp.txt"
+    # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/new_llamax_mix-1m.jsonl"
     # for lang in lang_list:
-        # path = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/final_{lang}-mix-1m.jsonl"
-    dataset = load_dataset(save_path)
-        # final_mix_dataset.extend(dataset)
+    #     path = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/llamax_{lang}-mix-1m.jsonl"
+    #     dataset = load_dataset(path)
+    #     final_mix_dataset.extend(dataset)
+    # # dataset = load_dataset(save_path)
     # random.shuffle(final_mix_dataset)
-    import code; code.interact(local=locals())
+    # with open(save_path, 'w') as f:
+    #     for data in dataset:
+    #         f.write(json.dumps(data, ensure_ascii=False) + "\n")
+    
+    # dataset = []
+    # lang_list = ["en", "ar", "tr", "hi"]
+    # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/final_llamax_mix-1m.jsonl"
+    # for lang in lang_list:
+    #     with open(f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/llamax_{lang}-mix-1m.jsonl", 'r') as f:
+    #         lines = f.readlines()
+    #         for line in lines:
+    #             dataset.append(json.loads(line.strip()))
+    # # dataset = dataset[61440:]
+    # random.shuffle(dataset)
+    # import code; code.interact(local=locals())
+    # with open(save_path, 'w') as f:
+    #     for data in dataset:
+    #         f.write(json.dumps(data, ensure_ascii=False) + "\n")
+    
+    src_lang = "hin"
+    tgt_lang_list = ["ltz", "bel", "ces", "mkd" ,"pol" ,"srp" ,"slk" ,"slv" ,"ukr", "ben" ,"guj" ,"hin" ,"mar" ,"npi" ,"pan" ,"urd" ,"hye" ,"ell" ,"lav" ,"lit", "fas", "cym" ,"ceb" ,"tgl" ,"jav", "azj", "kaz", "tur", "uzb", "kan", "mal" ,"tam", "tel", "mya", "est", "fin", "hun","kat","heb","khm","kor","lao","tha"]
+    # tgt_lang_list = ["ces"]
+    for tgt in tgt_lang_list:
+        file_path = f"/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Llama-3.2-3B-Instruct/{src_lang}-{tgt}.txt"
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            
+        if lines:
+            lines = lines[:-1]
+        with open(file_path, 'w') as f:
+            f.writelines(lines)
+    # preds = [data['pred'].replace("\n", "") for data in dataset]
+    # lang_detect_model = fasttext.load_model("/mnt/gemini/data1/yifengliu/model/lid.176.bin")
+    # lang_info = lang_detect_model.predict(preds)
+    # lang_labels = [label[0].replace("__label__", "") for label in lang_info[0]]
+    # print(sum([1 for label in lang_labels if label == "sr"]))
+    # 436
+    
+    # dataset = []
+    # with open(save_path, 'r') as f:
+    #     lines = f.readlines()
+    #     for line in lines[-2]:
+    #         dataset.append(line.strip())
+    # lang_pair_set = set([data['lang_pair'] for data in dataset])
+    
+    # dataset = load_dataset(save_path)
+    # for lang in lang_list:
+    #     path = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/llamax_{lang}-mix-1m.jsonl"
+    #     dataset = load_dataset(path)
+    #     final_mix_dataset.extend(dataset)
+    # random.shuffle(final_mix_dataset)
+    # # # import code; code.interact(local=locals())
     # with open(save_path, 'w') as f:
     #     for data in final_mix_dataset:
     #         f.write(json.dumps(data) + "\n")

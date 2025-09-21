@@ -253,6 +253,7 @@ class BasePPOTrainer(ABC):
             "ja": "jpn",
             "pl": "pol",
             "cs": "ces",
+            "ru": "rus",
         }
         src_lang = two2three[self.src]
         val_lang_list = [two2three[self.tgt]]

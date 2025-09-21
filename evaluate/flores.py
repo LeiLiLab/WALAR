@@ -102,10 +102,15 @@ def predict(model, tokenizer, dataset, sampling_params, lang_pair, model_path):
     src_lang, tgt_lang = lang_pair.split("-")
     src_lang, tgt_lang = lang_dict[src_lang], lang_dict[tgt_lang]
     prompts = []
+    model_path = model_path.lower()
     if "nllb" not in model_path:
         for src_text in tqdm(dataset, desc="Generating predictions"):
             # <X> \n Translate from [SRC] to [TGT]: \n <Y>
-            prompt = f"{src_text}\nTranslate from {src_lang} to {tgt_lang}:\n"
+            if 'llamax' in model_path:
+                # prompt = f"""Translate the following sentences from {src_lang} to {tgt_lang}.\n### Input:\n{src_text}\n"""
+                prompt = f"{src_text.strip()}\nTranslate from {src_lang} to {tgt_lang}:\n"
+            else:
+                prompt = f"{src_text.strip()}\nTranslate from {src_lang} to {tgt_lang}:\n"
             message = [
                 {"role": "user", "content": prompt},
             ]
@@ -135,6 +140,7 @@ def load_model_and_tokenizer(model_path, tensor_parallel_size):
             model=model_path,
             tensor_parallel_size=tensor_parallel_size,
             trust_remote_code=True,
+            max_model_len=2048,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
@@ -182,9 +188,15 @@ def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/g
     scores, mean_score = output.scores, output.system_score
     return {"mean_score": mean_score, "scores": scores}
 
+def has_content(file_path):
+    return os.path.isfile(file_path) and os.path.getsize(file_path) > 0
+
 def evaluate_single_lang_pair(model_path, data_dir, model, tokenizer, lang_pair, max_tokens, comet22, xcomet, output_file=None):
     """Evaluate a single language pair."""
     print(f"Evaluating model {model_path} on {lang_pair}...")
+    if has_content(output_file):
+        print(f"Output file {output_file} already exists and is non-empty. Skipping evaluation.")
+        return
     
     sources, references, predictions = evaluate_model(
         model_path, 
