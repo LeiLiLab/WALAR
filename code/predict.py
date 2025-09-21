@@ -465,7 +465,7 @@ def process_language_pairs(
     
     # Generate input file path based on the pattern
     input_file = generate_input_file_path(args.input_file, src, tgt)
-    
+    print(f"Input file: {input_file}")
     # Update args for this language pair
     current_args = dataclasses.replace(args, src=src, tgt=tgt, input_file=input_file)
     
@@ -499,6 +499,9 @@ def generate_input_file_path(input_file_pattern: str, src: str, tgt: str) -> str
   else:
     # Default pattern
     return f"{input_file_pattern}/{src}-{tgt}.jsonl"
+
+def has_content(file_path):
+    return os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
 def process_single_language_pair(
     args: Arguments,

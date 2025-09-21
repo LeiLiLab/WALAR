@@ -14,6 +14,16 @@ language_map = {
     'ja': 'Japanese',
 }
 
+def Prompt_template(query, src_language, trg_language):
+    instruction = f'Translate the following sentences from {src_language} to {trg_language}.'
+    prompt = (
+        'Below is an instruction that describes a task, paired with an input that provides further context. '
+        'Write a response that appropriately completes the request.\n'
+        f'### Instruction:\n{instruction}\n'
+        f'### Input:\n{query}\n### Response:'
+    )
+    return prompt
+
 def load_dataset(path):
     """Load dataset from a JSONL file."""
     dataset = []
@@ -52,25 +62,34 @@ def calculate_comet_score(src_texts, references, predictions, model_path="/mnt/g
 if __name__ == '__main__':
     xcomet_path = "/mnt/gemini/data1/yifengliu/model/models--Unbabel--XCOMET-XL/snapshots/6a123c5e8e6dccab25e5fcffa3c8b417abadb462/checkpoints/model.ckpt"
     # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    model_path = "/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
-    
+    model_path = "/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
+    # model_path = "/mnt/gemini/data1/yifengliu/model/Qwen3-XPlus-8B"
     # model_path = "/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
-    # sample = SamplingParams(n=1, temperature=0.6, top_k=-1, top_p=1, max_tokens=32768)
+    sample = SamplingParams(n=1, temperature=0.6, top_k=-1, top_p=1, max_tokens=2048)
     # src, tgt = "en", "zh"
-    # model = LLM(model=model_path, max_model_len=32768, tensor_parallel_size=1, trust_remote_code=True)
+    model = LLM(model=model_path, max_model_len=2048, tensor_parallel_size=1, trust_remote_code=True)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-
-    src = "There was an international drug ring based out of Jamaica at that time who had dealings with South America and it's my understanding the ring would use high-dollar art as collateral in deals."
-    # # 当时有一个国际贩毒集团总部设在牙买加，与南美有业务往来，据我所知，这个集团在交易中会将高价艺术品作为 抵押品
-    # # tgt = "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。"
-    # # user_prompt = user_prompt.format(src=src, tgt=tgt)
-    sentence = f"""{src}\nTranslate from English to Chinese:\n"""
-    message = [
-        {"role": "user", "content": sentence}
-    ]
-    prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=False)
-    # outputs = model.generate([prompt], sample)
-    # print(outputs[0].outputs[0].text)
+    path = "/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest/tur.devtest"
+    dataset = load_flores(path)
+    prompts = []
+    src_lang, tgt_lang = "English", "Turkish"
+    for data in dataset:
+        # src = "It also prevents psychological distress. \"Although social media has not yet been proven to cause depression, it is shown to intensify certain symptoms, such as social isolation and loneliness,\" Yassim added."
+        # # 当时有一个国际贩毒集团总部设在牙买加，与南美有业务往来，据我所知，这个集团在交易中会将高价艺术品作为 抵押品
+        # # tgt = "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。"
+        # user_prompt = user_prompt.format(src=src, tgt=tgt)
+        # sentence = f"""Translate the following sentences from {src_lang} to {tgt_lang}.\n### Input:\n{data}\n"""
+        # sentence = Prompt_template(data.strip(), src_lang, tgt_lang)
+        # sentence = f""""""
+        sentence = f"""{data.strip()}\nTranslate the above sentence from {src_lang} to {tgt_lang}."""
+        message = [
+            {"role": "user", "content": sentence}
+        ]
+        prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        prompts.append(prompt)
+        break
+    outputs = model.generate(prompts, sample)
+    print(outputs[0].outputs[0].text)
     #     # output = outputs[0].outputs[0].text
     
     # path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/base_en-mix-mid2-1m.jsonl"

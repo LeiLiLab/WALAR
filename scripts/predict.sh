@@ -6,14 +6,14 @@ data_name="flores"
 model_name="metricX"
 model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
-batch_size=16 ### Should be divisible by the number of GPUs
+batch_size=8 ### Should be divisible by the number of GPUs
 
 # Language lists for batch processing
 src_list=()  # Will be populated based on data_name
 tgt_list=()  # Will be populated based on data_name
 
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=7
 
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 # en->indic
@@ -66,7 +66,11 @@ process_language_pairs() {
       input_file_pattern="/mnt/gemini/data1/yifengliu/data/low-res"
       ;;
     "flores")
-      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Final-Qwen3-4B-post_final_mix-320k-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Llama-3.2-3B-Instruct"
+      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Final-Qwen3-4B-final_mix-160k-1M-bsz128/global_step1240_hf"
       ;;
   esac
   
@@ -75,7 +79,7 @@ process_language_pairs() {
     --model_name $model_name \
     --model_size $model_size \
     --dtype $dtype \
-    --max_input_length 1536 \
+    --max_input_length 1024 \
     --batch_size $batch_size \
     --input_file "$input_file_pattern" \
     --output_dir "/mnt/gemini/data1/yifengliu/qe-lr/output/$data_name" \
@@ -147,37 +151,39 @@ elif [ $data_name == "low-res" ]; then
 elif [ $data_name == "flores" ]; then
   # Use provided language lists or default values
   if [ ${#src_list[@]} -eq 0 ]; then
-    src_list=("eng")  # "ara" commented out as in original
+    src_list=("ara")  # "ara" commented out as in original
   fi
   if [ ${#tgt_list[@]} -eq 0 ]; then
     tgt_list=(
-      # "ben"
-      # "isl" "ltz" "bel" "ces" "mkd" "pol" "srp" "slk" "slv" "ukr"
-      # "guj" "hin" "mar" "npi" "pan" "urd" "hye" "ell" "lav" "lit" "fas"
-      # "cym" "ceb" "tgl" "jav" "ara" "azj" "kaz" "tur" "uzb" "kan" "mal"
-      # "tam" "tel" "mya" "est" "fin" "hun" "kat" "heb" "khm" "kor" "lao"
-    "ltz"
-    "mkd"
-    "pol"
-    "srp"
-    "slk"
-    "slv"
-    "ben"
-    "guj"
-    "hin"
-    "mar"
-    "pan"
-    "hye"
-    "ell"
-    "lav"
-    "lit"
-    "fas"
-    "tgl"
-    "jav"
-    "ara"
-    "tur"
-    "tam"
-    "fin"
+      "isl" "ltz" "bel" "ces" "mkd" "pol" "srp" "slk" "slv" "ukr" "ben"
+      "guj" "hin" "mar" "npi" "pan" "urd" "hye" "ell" "lav" "lit" "fas"
+      "cym" "ceb" "tgl" "jav" "ara" "azj" "kaz" "tur" "uzb" "kan" "mal"
+      "tam" "tel" "mya" "est" "fin" "hun" "kat" "heb" "khm" "kor" "lao"
+      "tha"
+      # 'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn'
+      # "isl" "bel" "ces" "ukr" "npi" "urd" "cym" "ceb" "azj" "uzb" "kan" "mal" "tam" "tel" "est" "hun" "kat" "heb" "khm" "kor"
+    # "ltz"
+    # "mkd"
+    # "pol"
+    # "srp"
+    # "slk"
+    # "slv"
+    # "ben"
+    # "guj"
+    # "hin"
+    # "mar"
+    # "pan"
+    # "hye"
+    # "ell"
+    # "lav"
+    # "lit"
+    # "fas"
+    # "tgl"
+    # "jav"
+    # "ara"
+    # "tur"
+    # "tam"
+    # "fin"
     )
   fi
   

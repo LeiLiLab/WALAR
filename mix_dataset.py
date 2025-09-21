@@ -24,9 +24,12 @@ def get_lang(lang_code):
         src_lang = lang_code.capitalize()
     return src_lang
 
-def make_prompt(source, src, tgt, template_type='chat', tokenizer=None):
+def make_prompt(source, src, tgt, model_name, template_type='chat', tokenizer=None):
     if template_type == 'base':
-        return f"{source}\nTranslate from {src} to {tgt}:"
+        if model_name == "llamax":
+            return f"""Translate the following sentences from {src_lang} to {tgt_lang}.\n### Input:\n{source}\n"""
+        else:
+            return f"{source}\nTranslate from {src} to {tgt}:"
     elif template_type == 'chat':
         return f"You are a helpful assistant. Translate this text from {src} to {tgt}:\n{source}"
     elif template_type == 'rl':
@@ -38,15 +41,18 @@ if __name__ == "__main__":
     # lang_list = ["ltz", "ast", "oci", "bos", "hrv", "mkd", "pol", "srp", "slk", "slv", "ben", "guj", "hin", "mar", "ory", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav"]
     # lang_list = ["ltz", "ast", "oci", "bos", "hrv", "mkd", ]
     # lang_list = ["ltz", "mkd", "pol", "srp", "slk", "slv", "ben", "guj", "hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "tur", "tam", "fin"]
-    lang_list = training_langs2
-    num_per_lang = 1000
-    src_lang_list = ["en", "ar", "tr", "hi"]
+    # lang_list = training_langs2
+    lang_list = ["amh", "azj", "bel", "hau", "ibo", "isl", "jav", "khm", "kan", "kor", "kir", "lao", "lit", "mri", "mal", "mon", "mar", "mya", "nso", "pol", "pus", "snd", "sna", "som", "srp", "tam", "tha", "tur", "umb", "xho", "yor", "zul"]
+    num_per_lang = 2500
+    src_lang_list = ["en", "hi", "ar", "tr"]
+    model_name = "llamax"
+    # src_lang_list = ["en"]
     # src_lang = "tr"
     for src_lang in src_lang_list:
         meta_file_path = f"/mnt/gemini/data1/yifengliu/data/wmt24_news_crawl/{src_lang}/ner-{src_lang}1m.jsonl"
         meta_dataset = load_dataset(meta_file_path)
         random.shuffle(meta_dataset)
-        output_file = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/final_{src_lang}-mix-1m.jsonl"
+        output_file = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/llamax_{src_lang}-mix-1m.jsonl"
         src_lang = get_lang(src_lang)
         # lang_list = ["isl", "ltz", "bel", "mkd", "srp", "slv", "ben", "guj", "mar", "npi", "pan", "urd", "hye", "ell", "lav", "lit", "fas", "jav", "kan", "mal", "tam", "tel", "fin", "hun", "heb"]
         final_lang_list = []
@@ -55,6 +61,7 @@ if __name__ == "__main__":
             if two_lang in support_list:
                 final_lang_list.append(lang)
         # import code; code.interact(local=locals())
+        # break
         def make_map_fn(split, src_lang, tgt_lang):
             def process_fn(example, idx):
                 data_source = example.get('data_source', 'unknown')
@@ -64,7 +71,7 @@ if __name__ == "__main__":
                 # Generate prefix
                 # src_lang, tgt_lang = get_langs(args)
                 # src_lang, tgt_lang = get_lang(src_lang), get_lang(tgt_lang)
-                prompt = make_prompt(source, src_lang, tgt_lang, template_type="base")
+                prompt = make_prompt(source, src_lang, tgt_lang, model_name, template_type="base")
                 
                 data = {
                     "data_source": data_source + "_" + f"{src_lang}-{tgt_lang}",
@@ -110,6 +117,8 @@ if __name__ == "__main__":
         print(train_pdf['prompt'][0])
         
         print(f"Train dataset saved to: {output_file}")
+        
+    # with open()
     # num_dict = {k: 20000 for k in final_lang_list}
     # save_path = "/mnt/gemini/data1/yifengliu/qe-lr/data/train/base_ar-mix-mid2-1m.jsonl"
     # new_dataset = []
@@ -126,3 +135,4 @@ if __name__ == "__main__":
     # with open(save_path, 'w') as f:
     #     for data in new_dataset:
     #         f.write(json.dumps(data) + "\n")
+    import code; code.interact(local=locals())
