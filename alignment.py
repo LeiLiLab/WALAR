@@ -554,7 +554,7 @@ def align_score5(srcs, tgts, model, tokenizer, batch_size=16):
             'src_len': len(sent_src),
             'tgt_len': len(sent_tgt)
         })
-    
+    # import code; code.interact(local=locals())
     # 批量处理
     model.eval()
     with torch.no_grad():
@@ -629,7 +629,8 @@ def align_score5(srcs, tgts, model, tokenizer, batch_size=16):
                     f1 = 2 * precision * recall / (precision + recall)
                 else:
                     f1 = 0.0
-                
+                # print_alignments(src_words, tgt_words, align_words)
+                import code; code.interact(local=locals())
                 align_score_list.append(f1)
     
     return align_score_list
@@ -682,6 +683,10 @@ src_dataset, tgt_dataset = [data['src'] for data in dataset], [data['pred'] for 
 # print(similarity)
 
 # src_dataset, tgt_dataset = src_dataset[-1:], tgt_dataset[-1:]  # for test
+src_dataset = ["Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the clinical and scientific division of the Canadian Diabetes Association cautioned that the research is still in its early days."]
+tgt_dataset = ["លោក​ឌុក​អេហូឌ​អ៊ូរ​(Dr. Ehud Ur)​ ដែល​ជា​សាស្រ្តាចារ្យ​នៃ​ការ​ព្យាបាល​នៅ​សាកល​វិទ្យាល័យ​ឌាឡូសី​(Dalhousie University)​ នៅ​ទីក្រុង​ហាលីហ្វាក​(Halifax)​ នៃ​ខេត្ត​នូវ៉ា​ស្កោស៊ី​(Nova Scotia)​ និង​ជា​ប្រធាន​នៃ​ផ្នែក​វិទ្យាសាស្រ្ត​និង​ការ​ស្រាវជ្រាវ​នៃ​សង្គម​ជន​ជាតិ​កាណាដា​(Canadian Diabetes Association)​ បាន​ប្រតិកម្ម​ថា​ ការ​ស្រាវជ្រាវ​នេះ​នៅ​ឡើយ​ទៅ​ជា​រយៈ​ពេល​ដំបូង​ប៉ុណ្ណោះ​ ហើយ​មិន​ទាន់​អាច​ផ្តល់​នូវ​លទ្ធផល​ច្បាស់​លាស់​"]
+src_dataset = [src.split() for src in src_dataset]
+tgt_dataset = [tgt.split() for tgt in tgt_dataset]
 align_score_list = align_score5(src_dataset, tgt_dataset, model, tokenizer)
 # align_score_list = align_score5(src_dataset, tgt_dataset, model, tokenizer, batch_size=16)
 

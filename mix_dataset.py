@@ -41,18 +41,18 @@ if __name__ == "__main__":
     # lang_list = ["ltz", "ast", "oci", "bos", "hrv", "mkd", "pol", "srp", "slk", "slv", "ben", "guj", "hin", "mar", "ory", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav"]
     # lang_list = ["ltz", "ast", "oci", "bos", "hrv", "mkd", ]
     # lang_list = ["ltz", "mkd", "pol", "srp", "slk", "slv", "ben", "guj", "hin", "mar", "pan", "hye", "ell", "lav", "lit", "fas", "tgl", "jav", "tur", "tam", "fin"]
-    # lang_list = training_langs2
-    lang_list = ["amh", "azj", "bel", "hau", "ibo", "isl", "jav", "khm", "kan", "kor", "kir", "lao", "lit", "mri", "mal", "mon", "mar", "mya", "nso", "pol", "pus", "snd", "sna", "som", "srp", "tam", "tha", "tur", "umb", "xho", "yor", "zul"]
-    num_per_lang = 2500
-    src_lang_list = ["en", "hi", "ar", "tr"]
-    model_name = "llamax"
+    lang_list = training_langs2
+    # lang_list = ["amh", "azj", "bel", "hau", "ibo", "isl", "jav", "kan", "kor", "kir", "lit", "mri", "mal", "mon", "mar", "nso", "pol", "pus", "snd", "sna", "som", "srp", "tam", "tha", "tur", "umb", "xho", "yor", "zul"]
+    num_per_lang = 10000
+    src_lang_list = ["en"]
+    model_name = "Qwen3-4B"
     # src_lang_list = ["en"]
     # src_lang = "tr"
     for src_lang in src_lang_list:
         meta_file_path = f"/mnt/gemini/data1/yifengliu/data/wmt24_news_crawl/{src_lang}/ner-{src_lang}1m.jsonl"
         meta_dataset = load_dataset(meta_file_path)
         random.shuffle(meta_dataset)
-        output_file = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/llamax_{src_lang}-mix-1m.jsonl"
+        output_file = f"/mnt/gemini/data1/yifengliu/qe-lr/data/train/pure41_{src_lang}-mix-1m.jsonl"
         src_lang = get_lang(src_lang)
         # lang_list = ["isl", "ltz", "bel", "mkd", "srp", "slv", "ben", "guj", "mar", "npi", "pan", "urd", "hye", "ell", "lav", "lit", "fas", "jav", "kan", "mal", "tam", "tel", "fin", "hun", "heb"]
         final_lang_list = []
@@ -97,11 +97,12 @@ if __name__ == "__main__":
             partial_dataset = Dataset.from_list(partial_dataset)
             lang = final_lang_list[i]
             tgt_lang = get_lang(lang)
-            train_dataset = partial_dataset.map(
-                function=make_map_fn('train', src_lang, tgt_lang), 
-                with_indices=True
-            )
-            all_datasets.append(train_dataset)
+            if tgt_lang != src_lang:
+                train_dataset = partial_dataset.map(
+                    function=make_map_fn('train', src_lang, tgt_lang), 
+                    with_indices=True
+                )
+                all_datasets.append(train_dataset)
         final_dataset = concatenate_datasets(all_datasets)
         final_dataset = final_dataset.shuffle(seed=42)
         dir_name = os.path.dirname(output_file)
