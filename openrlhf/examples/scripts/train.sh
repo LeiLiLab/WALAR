@@ -1,5 +1,6 @@
-export CUDA_VISIBLE_DEVICES=4,5,6,7
-ray start --head --node-ip-address 0.0.0.0 --num-gpus 4
+export CUDA_VISIBLE_DEVICES=6,7
+num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
+ray start --head --node-ip-address 0.0.0.0 --num-gpus ${num_gpus}
 
 eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python
@@ -24,13 +25,13 @@ path_dict["Llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
 path_dict["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
 path_dict["LlamaX"]="/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
 
-model="LlamaX"
-src="final"
-tgt="final"
-dataname="final_llamax_mix-1m"
+model="Qwen"
+src="en"
+tgt="mix-mid2"
+dataname="pure41_en-mix-1m"
 version="3"
-size="8B"
-reward_name="Final-mix"
+size="4B"
+reward_name="Pure2-QE"
 if [ "${#tgt}" -le 3 ]; then
     evaluation_step=10
 else
@@ -43,14 +44,15 @@ fi
 
 #--remote_comet_url http://localhost:4000/get_reward \
 # --pretrain /mnt/gemini/data1/yifengliu/model/Qwen${version}-${size} \
+# --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
 ray job submit --address="http://127.0.0.1:8265" \
     --runtime-env-json='{"working_dir": "/mnt/gemini/data1/yifengliu/qe-lr/openrlhf", "excludes": ["/mnt/gemini/data1/yifengliu/qe-lr/openrlhf/wandb/run-20250726_165454-yl7o7sbx/run-yl7o7sbx.wandb"]}' \
     -- python -m openrlhf.cli.train_ppo_ray \
     --ref_num_nodes 1 \
-    --ref_num_gpus_per_node 4 \
+    --ref_num_gpus_per_node ${num_gpus} \
     --actor_num_nodes 1 \
-    --actor_num_gpus_per_node 4 \
-    --vllm_num_engines 4 \
+    --actor_num_gpus_per_node ${num_gpus} \
+    --vllm_num_engines ${num_gpus} \
     --vllm_tensor_parallel_size 1 \
     --colocate_all_models \
     --vllm_gpu_memory_utilization 0.6 \
@@ -87,11 +89,12 @@ ray job submit --address="http://127.0.0.1:8265" \
     --normalize_reward \
     --flash_attn \
     --adam_offload \
+    --overlap_comm \
     --gradient_checkpointing \
     --temperature 1 \
     --save_steps 50 \
     --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
-    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
+    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/Pure2-QE-Qwen3-4B-base_en-mix-mid2-1m-bsz128 \
     --load_checkpoint \
     --save_hf_ckpt \
     --use_wandb ${wandb_token}\

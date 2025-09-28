@@ -87,9 +87,10 @@ def load_jsonl_dataset(path):
     return dataset
 
 if __name__ == '__main__':
-    dev_path = "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev/eng.dev"
-    devtest_path = "/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest/eng.devtest"
-    pretrain_path = "/mnt/gemini/data1/yifengliu/data/wmt24_news_crawl/en/en1m.jsonl"
+    lang = "ar"
+    dev_path = "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev/ara.dev"
+    devtest_path = "/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest/ara.devtest"
+    pretrain_path = f"/mnt/gemini/data1/yifengliu/data/wmt24_news_crawl/{lang}/ner-{lang}1m.jsonl"
     dev_dataset, devtest_dataset = load_dataset(dev_path), load_dataset(devtest_path)
     dev_dataset.extend(devtest_dataset)
     total_set = dev_dataset

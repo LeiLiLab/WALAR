@@ -7,16 +7,17 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 # Llama
 # base_model="Qwen3-4B"
 # base_model="Llama-3.2-3B-Instruct"
-base_model="LlamaX"
+base_model="Qwen3-4B"
 lang_detect=True
-rule=True       # '\n' for metricX
+rule=False       # '\n' for metricX
 truncate=False  # length truncate
 bleu=False
-align=True
+masklid=False
+align=False
 
 # No need to care if align=False
-src=final
-tgt=final
+src=en
+tgt=mix-mid2
 
 export CUDA_VISIBLE_DEVICES=0
 python -m openrlhf.cli.serve_rm \
@@ -29,6 +30,7 @@ python -m openrlhf.cli.serve_rm \
     --truncate $truncate \
     --bleu $bleu \
     --align $align \
+    --masklid $masklid \
     --src $src \
     --tgt $tgt \
     --batch_size 16 &
@@ -74,6 +76,6 @@ python -m openrlhf.cli.serve_rm \
 #     --tgt $tgt \
 #     --batch_size 16 &
 
-echo "XComet serves successfully!"
+# echo "XComet serves successfully!"
 
 wait

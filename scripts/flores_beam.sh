@@ -1,37 +1,37 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 declare -A model_path
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 
-model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
+model_path["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-8B"
 model_path["Qwen3X"]="/mnt/gemini/data1/yifengliu/model/Qwen3-XPlus-8B"
 model_path["llama"]="/mnt/gemini/data1/yifengliu/model/Llama-3.2-3B-Instruct"
 model_path["llamax"]="/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
 model_path["Qwen-base"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B-Base"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Mask+Detect-New-Align-Rule-MetricX-Qwen3-4B-en-mix-mid2-1M-bsz128/global_step700_hf"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Final-mix-LlamaX3-8B-final_llamax_mix-1m-1M-bsz128/global_step300_hf"
-# model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Pure2-QE-Qwen3-4B-base_en-mix-mid2-1m-bsz128/global_step700_hf"
-model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128/global_step400_hf"
+model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Final2-mix-LlamaX3-8B-final_llamax_mix-100k-1M-bsz128"
+
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Final-Qwen3-4B-post_final_mix-320k-1M-bsz128"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Final-Llama3.2-3B-final_mix-160k-1M-bsz128/global_step480_hf"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128/global_step50_hf"
 # model_path["checkpoint"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
-model_path["generalization"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Generalization2-Qwen3-4B-final_tr-mix-1m-1M-bsz128"
+model_path["generalization"]="/mnt/gemini/data1/yifengliu/checkpoints/final/Generalization-Qwen3-4B-final_en-mix-1m-1M-bsz128"
 model_path["nllb"]="/mnt/gemini/data1/yifengliu/model/nllb-200-distilled-1.3B"
 
 # Configuration
-MODEL_NAME="checkpoint"
+MODEL_NAME="llamax"
 MODEL_PATH=${model_path[$MODEL_NAME]}
-# export VLLM_USE_V1=0
 
 # For multiple language pairs mode
 # SOURCE_LANGUAGES="ara"  # Comma-separated list: "eng,deu,fra"
 # TARGET_LANGUAGES="ben,guj,hin,mar,pan,hye,ell,lav,lit,fas,tgl,jav,ara,tur,tam,fin"  # Comma-separated list
 source_language_list=(
     "eng"
-    # "eng_Latn"
-    # "tur"
     # "hin"
+    "ara"
+    "tur"
+    "hin"
 
     # "isl"
     # "ltz"
@@ -77,7 +77,6 @@ source_language_list=(
 )
 # Legacy target_language_list for backward compatibility (will be converted to TARGET_LANGUAGES if not set)
 target_language_list=(
-    # "nob_Latn"
     # "tur"
     # "hun"
     # "vie" 
@@ -95,49 +94,48 @@ target_language_list=(
     # "swh"
     # "zho_simpl"
     # "tel"
-    # "ara" "ces" "dan" "deu" "spa" "fin" "fra" "hrv" "hun" "ind" "ita" "jpn" "kor" "msa" "nld" "nob" "pol" "por" "ron" "rus" "swe" "tha" "tur" "ukr" "vie" "zho_simpl"
 
-    "isl"
-    "ltz"
-    "bel"
-    "ces"
-    "mkd"
-    "pol"
-    "slk"
-    "slv"
-    "ukr"
-    "ben"
-    "guj"
-    "hin"
-    "mar"
-    "npi"
-    "pan"
-    "urd"
-    "hye"
-    "ell"
-    "lav"
-    "lit"
-    "fas"
-    "cym"
-    "ceb"
-    "tgl"
-    "jav"
-    "ara"
-    "azj"
-    "tur"
-    "uzb"
-    "kan"
-    "mal"
-    "tam"
-    "tel"
-    "est"
-    "fin"
-    "hun"
-    "kat"
-    "heb"
-    "khm"
-    "kor"
-    "tha"
+    # "isl"
+    # "ltz"
+    # "bel"
+    # "ces"
+    # "mkd"
+    # "pol"
+    # "slk"
+    # "slv"
+    # "ukr"
+    # "ben"
+    # "guj"
+    # "hin"
+    # "mar"
+    # "npi"
+    # "pan"
+    # "urd"
+    # "hye"
+    # "ell"
+    # "lav"
+    # "lit"
+    # "fas"
+    # "cym"
+    # "ceb"
+    # "tgl"
+    # "jav"
+    # "ara"
+    # "azj"
+    # "tur"
+    # "uzb"
+    # "kan"
+    # "mal"
+    # "tam"
+    # "tel"
+    # "est"
+    # "fin"
+    # "hun"
+    # "kat"
+    # "heb"
+    # "khm"
+    # "kor"
+    # "tha"
     
     # "ceb"
     # "tgl"
@@ -183,7 +181,7 @@ target_language_list=(
     # "ltz"
     # "tha"
     # "vie"
-    # 'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn' 'vie'
+    'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn' 'vie'
     # "ltz"
     # "mkd"
     # "pol"
@@ -392,7 +390,7 @@ target_language_list=(
     # "kan"
 )
 INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores101_dataset/devtest"
-# INPUT_DIR="/mnt/gemini/data1/yifengliu/data/flores200_dataset/devtest"
+
 # Determine relative path for output directory
 if [ $MODEL_NAME == "Qwen" ]; then
     relative_path=${MODEL_PATH#*/model/}
@@ -408,7 +406,7 @@ else
     relative_path=${MODEL_PATH#*/checkpoints/}
 fi
 
-OUTPUT_DIR="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/${relative_path}"
+OUTPUT_DIR="/mnt/gemini/data1/yifengliu/qe-lr/output/flores_beam/${relative_path}"
 
 
 # # Convert legacy target_language_list to TARGET_LANGUAGES if TARGET_LANGUAGES is not set
@@ -430,20 +428,24 @@ if [ -n "$SOURCE_LANGUAGES" ] && [ -n "$TARGET_LANGUAGES" ]; then
     
     cd /mnt/gemini/data1/yifengliu/qe-lr
     # Run the evaluation for all language pairs
-    python evaluate/flores.py \
+    python evaluate/flores_beam.py \
         --model_name_or_path "$MODEL_PATH" \
         --data_dir "$INPUT_DIR" \
         --source_languages "$SOURCE_LANGUAGES" \
         --target_languages "$TARGET_LANGUAGES" \
         --comet22 False \
         --xcomet False \
-        --tensor_parallel_size $num_gpus \
+        --batch_size 8 \
+        --num_beams 4 \
+        --max_new_tokens 256 \
+        --length_penalty 1.0 \
+        --no_repeat_ngram_size 3 \
         --output_dir "$OUTPUT_DIR"
         
 else
     echo "Error: Either LANG_PAIR or both SOURCE_LANGUAGES and TARGET_LANGUAGES must be set"
     echo "Usage examples:"
-    echo "  Single language pair: LANG_PAIR=\"eng-hin\" ./flores.sh"
-    echo "  Multiple pairs: SOURCE_LANGUAGES=\"eng,deu\" TARGET_LANGUAGES=\"hin,ben,tam\" ./flores.sh"
+    echo "  Single language pair: LANG_PAIR=\"eng-hin\" ./flores_beam.sh"
+    echo "  Multiple pairs: SOURCE_LANGUAGES=\"eng,deu\" TARGET_LANGUAGES=\"hin,ben,tam\" ./flores_beam.sh"
     exit 1
 fi

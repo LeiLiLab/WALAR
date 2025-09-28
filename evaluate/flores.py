@@ -5,7 +5,6 @@ import torch
 import transformers
 import json
 import sacrebleu
-
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'code')))
 from utils import lang_dict
@@ -14,6 +13,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from vllm import LLM, SamplingParams
+from vllm.sampling_params import BeamSearchParams
 from dataclasses import dataclass, field
 from typing import Optional
 from sacrebleu.metrics import BLEU, CHRF
@@ -56,7 +56,7 @@ class EvaluationArguments:
         metadata={"help": "Number of GPUs to use for tensor parallelism"}
     )
     max_tokens: int = field(
-        default=512,
+        default=256,
         metadata={"help": "Maximum number of tokens to generate"}
     )
     comet22: bool = field(
@@ -107,17 +107,21 @@ def predict(model, tokenizer, dataset, sampling_params, lang_pair, model_path):
         for src_text in tqdm(dataset, desc="Generating predictions"):
             # <X> \n Translate from [SRC] to [TGT]: \n <Y>
             if 'llamax' in model_path:
-                # prompt = f"""Translate the following sentences from {src_lang} to {tgt_lang}.\n### Input:\n{src_text}\n"""
-                prompt = f"{src_text.strip()}\nTranslate from {src_lang} to {tgt_lang}:\n"
+                prompt = f"""Translate the following sentences from {src_lang} to {tgt_lang}.\n### Input:\n{src_text}\n"""
+                # prompt = f"{src_text.strip()}\nTranslate from {src_lang} to {tgt_lang}:\n"
             else:
                 prompt = f"{src_text.strip()}\nTranslate from {src_lang} to {tgt_lang}:\n"
             message = [
                 {"role": "user", "content": prompt},
             ]
             new_prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=False)
-            prompts.append(new_prompt)
+            prompts.append({"prompt": new_prompt})
+        # import code; code.interact(local=locals())
         responses = model.generate(prompts, sampling_params=sampling_params)
         responses = [response.outputs[0].text for response in responses]
+        
+        # responses = model.beam_search(prompts, sampling_params)
+        # responses = [response.sequences[0].text for response in responses]
     else:
         batch_size = 32
         responses = []
@@ -141,6 +145,7 @@ def load_model_and_tokenizer(model_path, tensor_parallel_size):
             tensor_parallel_size=tensor_parallel_size,
             trust_remote_code=True,
             max_model_len=2048,
+            task="generate",
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
@@ -159,6 +164,7 @@ def evaluate_model(model_path, model, tokenizer, data_dir, lang_pair, max_tokens
     
     # Configure sampling parameters
     sampling_params = SamplingParams(
+        n=1,
         max_tokens=max_tokens,
         temperature=0.0,  # Use greedy decoding
         top_p=1.0,
@@ -166,6 +172,14 @@ def evaluate_model(model_path, model, tokenizer, data_dir, lang_pair, max_tokens
         seed=0,
     )
     
+    # sampling_params = SamplingParams(
+    #     n=1,
+    #     max_tokens=max_tokens,
+    #     temperature=0.1,
+    #     top_p=1,
+    #     top_k=20,
+    # )
+    # sampling_params = BeamSearchParams(beam_width=4, max_tokens=max_tokens)
     predictions = predict(model, tokenizer, src_dataset, sampling_params, lang_pair, model_path)
     
     
@@ -261,11 +275,13 @@ def evaluate_multiple_lang_pairs(model_path, data_dir, model, tokenizer, source_
     # Parse language lists
     src_langs = [lang.strip() for lang in source_languages.split(',')]
     tgt_langs = [lang.strip() for lang in target_languages.split(',')]
+    # tgt_langs = [lang for lang in list(lang_dict.keys()) if lang != "ary" and lang != "arz"]
     
     # Generate all language pairs
     lang_pairs = []
     for src in src_langs:
         for tgt in tgt_langs:
+            # if src != tgt:
             lang_pairs.append(f"{src}-{tgt}")
     
     print(f"Evaluating {len(lang_pairs)} language pairs: {lang_pairs}")

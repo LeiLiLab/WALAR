@@ -3,17 +3,17 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/code
 
 # Default values
 data_name="flores"
-model_name="metricX"
-model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
+model_name="XComet"
+model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
-batch_size=8 ### Should be divisible by the number of GPUs
+batch_size=6 ### Should be divisible by the number of GPUs
 
 # Language lists for batch processing
 src_list=()  # Will be populated based on data_name
 tgt_list=()  # Will be populated based on data_name
 
 
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=2
 
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 # en->indic
@@ -69,7 +69,11 @@ process_language_pairs() {
       # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Final-Qwen3-4B-post_final_mix-320k-1M-bsz128"
       # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Qwen3-4B"
       # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Llama-3.2-3B-Instruct"
-      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/LLaMAX3-8B-Alpaca"
+      input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores_beam/final/Final2-mix-LlamaX3-8B-final_llamax_mix-100k-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Generalization2-Qwen3-4B-final_tr-mix-1m-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Continue-Final-Llama3.2-3B-post_final_mix-160k-1M-bsz128"
+      # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/final/Generalization-Qwen3-4B-final_en-mix-1m-1M-bsz128"
       # input_file_pattern="/mnt/gemini/data1/yifengliu/qe-lr/output/flores/Final-Qwen3-4B-final_mix-160k-1M-bsz128/global_step1240_hf"
       ;;
   esac
@@ -151,17 +155,41 @@ elif [ $data_name == "low-res" ]; then
 elif [ $data_name == "flores" ]; then
   # Use provided language lists or default values
   if [ ${#src_list[@]} -eq 0 ]; then
-    src_list=("ara")  # "ara" commented out as in original
+    src_list=("eng" "ara" "tur" "hin")  # "ara" commented out as in original
   fi
   if [ ${#tgt_list[@]} -eq 0 ]; then
     tgt_list=(
-      "isl" "ltz" "bel" "ces" "mkd" "pol" "srp" "slk" "slv" "ukr" "ben"
-      "guj" "hin" "mar" "npi" "pan" "urd" "hye" "ell" "lav" "lit" "fas"
-      "cym" "ceb" "tgl" "jav" "ara" "azj" "kaz" "tur" "uzb" "kan" "mal"
-      "tam" "tel" "mya" "est" "fin" "hun" "kat" "heb" "khm" "kor" "lao"
-      "tha"
+      # "isl" "ltz" "bel" "ces" "mkd" "pol" "slk" "slv" "ukr" "ben"
+      # "guj" "hin" "mar" "npi" "pan" "urd" "hye" "ell" "lav" "lit" "fas"
+      # "cym" "ceb" "tgl" "jav" "ara" "azj" "tur" "uzb" "kan" "mal"
+      # "tam" "tel" "est" "fin" "hun" "kat" "heb" "khm" "kor" "tha"
+    # "ara" "ces" "dan" "deu" "spa" "fin" "fra" "hrv" "hun" "ind" "ita" "jpn" "kor" "msa" "nld" "nob" "pol" "por" "ron" "rus" "swe" "tha" "tur" "ukr" "vie" "zho_simpl"
+      'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn' 'vie'
       # 'afr' 'dan' 'nld' 'deu' 'nob' 'swe' 'cat' 'fra' 'glg' 'por' 'ron' 'spa' 'bul' 'rus' 'ita' 'ind' 'msa' 'zho_simpl' 'jpn'
       # "isl" "bel" "ces" "ukr" "npi" "urd" "cym" "ceb" "azj" "uzb" "kan" "mal" "tam" "tel" "est" "hun" "kat" "heb" "khm" "kor"
+    # 'amh'
+    # 'azj'
+    # 'bel'
+    # 'isl'
+    # 'jav'
+    # 'kan'
+    # 'kor'
+    # 'kir'
+    # 'lit'
+    # 'mal'
+    # 'mon'
+    # 'mar'
+    # 'mya'
+    # 'pol'
+    # 'pus'
+    # 'snd'
+    # 'som'
+    # 'srp'
+    # 'tam'
+    # 'tha'
+    # 'tur'
+    # 'yor'
+    
     # "ltz"
     # "mkd"
     # "pol"

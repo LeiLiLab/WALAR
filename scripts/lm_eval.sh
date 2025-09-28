@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=4
+export CUDA_VISIBLE_DEVICES=2
 
 eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
 which python
@@ -16,7 +16,9 @@ num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 # mgsm_direct, mmlu_prox_zh, mmlu_pro
 lm_eval --model vllm \
     --model_args pretrained=${model_path},tensor_parallel_size=${num_gpus},dtype="auto",gpu_memory_utilization=0.8,enable_thinking=False \
-    --tasks mmlu_prox_zh \
+    --tasks mgsm_direct \
+    --gen_kwargs temperature=0.7,top_p=0.8,top_k=20,min_p=0,do_sample=True \
     --output_path /mnt/gemini/data1/yifengliu/qe-lr/output/mmlu_pro \
     --log_samples \
+    --apply_chat_template \
     --batch_size auto

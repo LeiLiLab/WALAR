@@ -198,6 +198,11 @@ class Arguments:
     metadata={"help": "Enable alignment model"}
   )
 
+  masklid: bool = dataclasses.field(  
+    default=False,
+    metadata={"help": "Enable MaskLID for code-switching detection"}
+  )
+  
   load_in_4bit: bool = dataclasses.field(
       default=False,
       metadata={"help": "Load model in 4-bit precision"}
@@ -682,7 +687,7 @@ class RewardModelProxy:
         if self.args.align:
           print(srcs[0])
           print(tgts[0])
-          if self.args.lang_detect:
+          if self.args.masklid:
             if 'llamax' in self.base_model.lower():
               pattern = r"Translate the following sentences from ([^\n<]+) to ([^\n<]+)."
               target_languages = [re.search(pattern, query).group(2).strip() for query in queries if re.search(pattern, query)]

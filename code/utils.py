@@ -115,6 +115,9 @@ lang_dict = {
     "xho": "Xhosa",
     "yor": "Yoruba",
     "zul": "Zulu",
+    "eng_Latn": "English",
+    "nob_Latn": "Norwegian Bokmål",
+    "arz_Arab": "Egypt"
 }
 
 mm_dict = {
@@ -237,7 +240,9 @@ training_langs = ["isl", "ltz", "bel", "ces", "mkd", "pol", "srp", "slk", "slv",
 
 training_langs2 = ["isl", "ltz", "bel", "ces", "mkd", "pol", "slk", "slv", "ukr", "ben", "guj", "hin", "mar", "npi", "pan", "urd", "hye", "ell", "cym", "lav", "lit", "fas", "ceb", "tgl", "jav", "ara", "azj", "tur", "uzb", "kan", "mal", "tam", "tel", "est", "fin", "hun", "kat", "heb", "khm", "kor", "tha"]
 
-llamax_langs = ['amh', 'azj', 'bel', 'isl', 'jav', 'khm', 'kan', 'kor', 'kir', 'lao', 'lit', 'mal', 'mon', 'mar', 'mya', 'pol', 'pus', 'snd', 'som', 'srp', 'tam', 'tha', 'tur', 'yor']
+high_langs = ['afr', 'dan', 'nld', 'deu', 'nob', 'swe', 'cat', 'fra', 'glg', 'por', 'ron', 'spa', 'bul', 'rus', 'ita', 'ind', 'msa', 'zho_simpl', 'jpn', 'vie']
+
+llamax_langs = ['amh', 'azj', 'bel', 'isl', 'jav', 'kan', 'kor', 'kir', 'lit', 'mal', 'mon', 'mar', 'pol', 'pus', 'snd', 'som', 'srp', 'tam', 'tha', 'tur', 'yor']
 # we only care about these languages
 long2lang = {
   "isl_Latn": "Icelandic",
