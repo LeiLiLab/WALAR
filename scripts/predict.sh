@@ -8,8 +8,8 @@ cd /mnt/gemini/data1/yifengliu/qe-lr/code
 data_name="benchmax"
 # model_name="XComet" # XComet
 # model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
-model_name="XComet" # XComet
-model_size="xl"  ### model_size can be discarded if your model_name is not XComet or metricX
+model_name="metricX" # XComet
+model_size="xxl"  ### model_size can be discarded if your model_name is not XComet or metricX
 dtype="bf16"  ### dtype can be discarded if your model_name is not metricX
 batch_size=16 ### Should be divisible by the number of GPUs
 
@@ -17,9 +17,7 @@ batch_size=16 ### Should be divisible by the number of GPUs
 src_list=()  # Will be populated based on data_name
 tgt_list=()  # Will be populated based on data_name
 
-
-export CUDA_VISIBLE_DEVICES=2
-
+export CUDA_VISIBLE_DEVICES=3
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 # en->indic
 #/mnt/data1/yifengliu/data/IndicMT/zero_shot/assamese.jsonl
@@ -233,10 +231,10 @@ elif [ $data_name == "benchmax" ]; then
   # Use provided language lists or default values (ISO 2-character codes)
   if [ ${#src_list[@]} -eq 0 ]; then
     src_list=(
-      "en" "ar" "tr" "hi"
-      "ru" "sw" "zh"
+      # "en" "ar" "tr" "hi"
+      # "ru" "sw" "zh"
       # "en"
-      # 'af' 'am' 'ar' 'hy' 'as' 'ast' 'az' 'be' 'bn' 'bs' 'bg' 'my' 'ca' 'ceb' 'zh' 'zho_trad' 'hr' 'cs' 'da' 'nl' 'en' 'et' 'tl' 'fi' 'fr' 'ff' 'gl' 'lg' 'ka' 'de' 'el' 'gu' 'ha' 'he' 'hi' 'hu' 'is' 'ig' 'id' 'ga' 'it' 'ja' 'jv' 'kea' 'kam' 'kn' 'kk' 'km' 'ko' 'ky' 'lo' 'lv' 'ln' 'lt' 'luo' 'lb' 'mk' 'ms' 'ml' 'mt' 'mi' 'mr' 'mn' 'ne' 'ns' 'no' 'ny' 'oc' 'or' 'om' 'ps' 'fa' 'pl' 'pt' 'pa' 'ro' 'ru' 'sr' 'sn' 'sd' 'sk' 'sl' 'so' 'ku' 'es' 'sw' 'sv' 'tg' 'ta' 'te' 'th' 'tr' 'uk' 'umb' 'ur' 'uz' 'vi' 'cy' 'wo' 'xh' 'yo' 'zu'
+      'af' 'am' 'ar' 'hy' 'as' 'ast' 'az' 'be' 'bn' 'bs' 'bg' 'my' 'ca' 'ceb' 'zh' 'zho_trad' 'hr' 'cs' 'da' 'nl' 'en' 'et' 'tl' 'fi' 'fr' 'ff' 'gl' 'lg' 'ka' 'de' 'el' 'gu' 'ha' 'he' 'hi' 'hu' 'is' 'ig' 'id' 'ga' 'it' 'ja' 'jv' 'kea' 'kam' 'kn' 'kk' 'km' 'ko' 'ky' 'lo' 'lv' 'ln' 'lt' 'luo' 'lb' 'mk' 'ms' 'ml' 'mt' 'mi' 'mr' 'mn' 'ne' 'ns' 'no' 'ny' 'oc' 'or' 'om' 'ps' 'fa' 'pl' 'pt' 'pa' 'ro' 'ru' 'sr' 'sn' 'sd' 'sk' 'sl' 'so' 'ku' 'es' 'sw' 'sv' 'tg' 'ta' 'te' 'th' 'tr' 'uk' 'umb' 'ur' 'uz' 'vi' 'cy' 'wo' 'xh' 'yo' 'zu'
       # "ja" "az" "ne"
     #  'ig' 'id' 'ga' 'it' 'ja' 'jv' 'kea' 'kam' 'kn' 'kk' 'km' 'ko' 'ky' 'lo' 'lv' 'ln' 'lt' 'luo' 'lb' 'mk' 'ms' 'ml' 'mt' 'mi' 'mr' 'mn' 'ne' 'ns' 'no' 'ny' 'oc' 'or' 'om' 'ps' 'fa' 'pl' 'pt' 'pa' 'ro' 'ru' 'sr' 'sn' 'sd' 'sk' 'sl' 'so' 'ku' 'es' 'sw' 'sv' 'tg' 'ta' 'te' 'th' 'tr' 'uk' 'umb' 'ur' 'uz' 'vi' 'cy' 'wo' 'xh' 'yo' 'zu'
 
@@ -244,8 +242,10 @@ elif [ $data_name == "benchmax" ]; then
   fi
   if [ ${#tgt_list[@]} -eq 0 ]; then
     tgt_list=(
-      # "ja" "az" "ne"
-      'af' 'am' 'ar' 'hy' 'as' 'ast' 'az' 'be' 'bn' 'bs' 'bg' 'my' 'ca' 'ceb' 'zh' 'zho_trad' 'hr' 'cs' 'da' 'nl' 'en' 'et' 'tl' 'fi' 'fr' 'ff' 'gl' 'lg' 'ka' 'de' 'el' 'gu' 'ha' 'he' 'hi' 'hu' 'is' 'ig' 'id' 'ga' 'it' 'ja' 'jv' 'kea' 'kam' 'kn' 'kk' 'km' 'ko' 'ky' 'lo' 'lv' 'ln' 'lt' 'luo' 'lb' 'mk' 'ms' 'ml' 'mt' 'mi' 'mr' 'mn' 'ne' 'ns' 'no' 'ny' 'oc' 'or' 'om' 'ps' 'fa' 'pl' 'pt' 'pa' 'ro' 'ru' 'sr' 'sn' 'sd' 'sk' 'sl' 'so' 'ku' 'es' 'sw' 'sv' 'tg' 'ta' 'te' 'th' 'tr' 'uk' 'umb' 'ur' 'uz' 'vi' 'cy' 'wo' 'xh' 'yo' 'zu'
+      # "ja" 
+      # "az"
+      "ne"
+      # 'af' 'am' 'ar' 'hy' 'as' 'ast' 'az' 'be' 'bn' 'bs' 'bg' 'my' 'ca' 'ceb' 'zh' 'zho_trad' 'hr' 'cs' 'da' 'nl' 'en' 'et' 'tl' 'fi' 'fr' 'ff' 'gl' 'lg' 'ka' 'de' 'el' 'gu' 'ha' 'he' 'hi' 'hu' 'is' 'ig' 'id' 'ga' 'it' 'ja' 'jv' 'kea' 'kam' 'kn' 'kk' 'km' 'ko' 'ky' 'lo' 'lv' 'ln' 'lt' 'luo' 'lb' 'mk' 'ms' 'ml' 'mt' 'mi' 'mr' 'mn' 'ne' 'ns' 'no' 'ny' 'oc' 'or' 'om' 'ps' 'fa' 'pl' 'pt' 'pa' 'ro' 'ru' 'sr' 'sn' 'sd' 'sk' 'sl' 'so' 'ku' 'es' 'sw' 'sv' 'tg' 'ta' 'te' 'th' 'tr' 'uk' 'umb' 'ur' 'uz' 'vi' 'cy' 'wo' 'xh' 'yo' 'zu'
       # "en" "ar" "tr" "hi" 
       # "ru" "sw" "zh"
       # "zh" "kn" "is" "lb" "be" "cs" "mk" "sk" "sl" "uk" "bn" "gu" "hi" "mr" "ne" "pa" "ur" "hy" "el" "lv" "lt" "fa" "cy" "ceb" "tl" "jv" "ar" "az" "tr" "uz"

@@ -1,13 +1,16 @@
-export CUDA_VISIBLE_DEVICES=4,5,6,7
+
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 ray start --head --node-ip-address 0.0.0.0 --num-gpus ${num_gpus}
 
-eval "$(/mnt/gemini/home/yifengliu/miniconda3/bin/conda shell.bash hook)"
+
+CONDA_PATH=/mnt/gemini/data1/yifengliu/miniconda3
+OPENRLHF_PATH=/mnt/gemini/data1/yifengliu/qe-lr/openrlhf
+eval "$(${CONDA_PATH}/bin/conda shell.bash hook)"
 which python
-source /mnt/gemini/home/yifengliu/miniconda3/bin/activate qe-rl
+source ${CONDA_PATH}/bin/activate qe-rl
 # export RAY_RUNTIME_ENV_TEMPORARY_REFERENCE_EXPIRATION_S=1200
 
-cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
+cd $OPENRLHF_PATH
 
 export HF_HOME=/mnt/gemini/data2/yifengliu/.cache/huggingface
 export TRANSFORMERS_CACHE=/mnt/gemini/data2/yifengliu/.cache/huggingface/transformers
@@ -27,15 +30,9 @@ path_dict["LlamaX"]="/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
 
 model="LlamaX"
 dataname="schedule_mix10k"
-version=sftp "3"
 size="8B"
-schedule=true
 reward_name="qe+lang_detect"
-if [ "${#tgt}" -le 3 ]; then
-    evaluation_step=10
-else
-    evaluation_step=100000
-fi
+
 # remote_rm_url
 # remote_rm_url2
 # remote_comet_url
@@ -45,7 +42,7 @@ fi
 # --pretrain /mnt/gemini/data1/yifengliu/model/Qwen${version}-${size} \
 # --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
 ray job submit --address="http://127.0.0.1:8265" \
-    --runtime-env-json='{"working_dir": "/mnt/gemini/data1/yifengliu/qe-lr/openrlhf", "excludes": ["/mnt/gemini/data1/yifengliu/qe-lr/openrlhf/wandb/run-20250726_165454-yl7o7sbx/run-yl7o7sbx.wandb"]}' \
+    --runtime-env-json='{"working_dir": "/mnt/gemini/data1/yifengliu/qe-lr/openrlhf"}' \
     -- python -m openrlhf.cli.train_ppo_ray \
     --ref_num_nodes 1 \
     --ref_num_gpus_per_node ${num_gpus} \
@@ -77,7 +74,6 @@ ray job submit --address="http://127.0.0.1:8265" \
     --kl_estimator k3 \
     --advantage_estimator group_norm \
     --prompt_data /mnt/gemini/data1/yifengliu/qe-lr/data/train/${dataname}.jsonl \
-    --schedule ${schedule} \
     --eval_dir "/mnt/gemini/data1/yifengliu/data/flores101_dataset/dev" \
     --eval_temperature 0.0 \
     --eval_steps 100000 \
@@ -91,12 +87,12 @@ ray job submit --address="http://127.0.0.1:8265" \
     --gradient_checkpointing \
     --temperature 1 \
     --save_steps 50 \
-    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
-    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}${version}-${size}-${dataname}-1M-bsz128 \
+    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}-${size}-${dataname}-1M-bsz128 \
+    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}-${size}-${dataname}-1M-bsz128 \
     --load_checkpoint \
     --save_hf_ckpt \
     --use_wandb ${wandb_token}\
-    --wandb_run_name "${reward_name}-${model}${version}-${size}-${dataname}-bsz128" \
+    --wandb_run_name "${reward_name}-${model}-${size}-${dataname}-bsz128" \
     --enforce_eager \
     --vllm_enable_sleep \
     --deepspeed_enable_sleep

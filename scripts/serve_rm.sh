@@ -1,8 +1,11 @@
-eval "$(/mnt/gemini/dat1/yifengliu/miniconda3/bin/conda shell.bash hook)"
-which python
-source /mnt/gemini/data1/yifengliu/miniconda3/bin/activate qe-rl
+CONDA_PATH=/mnt/gemini/data1/yifengliu/miniconda3
+OPENRLHF_PATH=/mnt/gemini/data1/yifengliu/qe-lr/openrlhf
 
-cd /mnt/gemini/data1/yifengliu/qe-lr/openrlhf
+eval "$(${CONDA_PATH}/bin/conda shell.bash hook)"
+which python
+source $CONDA_PATH/bin/activate qe-rl
+
+cd $OPENRLHF_PATH
 
 # Llama
 # base_model="Qwen3-4B"
@@ -14,8 +17,6 @@ rule=True       # '\n' for metricX
 masklid=False
 align=False
 
-
-export CUDA_VISIBLE_DEVICES=3
 python -m openrlhf.cli.serve_rm \
     --model_name  metricX \
     --base_model $base_model \
