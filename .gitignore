@@ -9,3 +9,4 @@
 !scripts/predict.sh
 !scripts/serve_rm.sh
 !README.md
+!requirements.txt
