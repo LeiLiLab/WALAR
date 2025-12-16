@@ -5,7 +5,6 @@
 !code/predict.py
 !openrlhf/
 !scripts/
-!scripts/benchmax.sh
 !scripts/lang_detect.sh
 !scripts/predict.sh
 !scripts/serve_rm.sh
