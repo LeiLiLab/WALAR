@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=1
 
 CONDA_PATH=/mnt/gemini/data1/yifengliu/miniconda3
 OPENRLHF_PATH=/mnt/gemini/data1/yifengliu/qe-lr/openrlhf
