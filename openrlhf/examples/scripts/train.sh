@@ -89,12 +89,12 @@ ray job submit --address="http://127.0.0.1:8265" \
     --gradient_checkpointing \
     --temperature 1 \
     --save_steps 50 \
-    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}-${size}-${data_name}-bsz128 \
-    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}-${size}-${data_name}-bsz128 \
+    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}-${size}-schedule_mix10k-1M-bsz128 \
+    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}-${size}-schedule_mix10k-1M-bsz128 \
     --load_checkpoint \
     --save_hf_ckpt \
     --use_wandb ${wandb_token}\
-    --wandb_run_name "${reward_name}-${model}-${size}-${data_name}" \
+    --wandb_run_name "${reward_name}-${model}-${size}-schedule_mix10k-bsz128" \
     --enforce_eager \
     --vllm_enable_sleep \
     --deepspeed_enable_sleep
