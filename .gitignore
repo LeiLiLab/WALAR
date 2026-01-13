@@ -9,5 +9,7 @@
 !scripts/lang_detect.sh
 !scripts/predict.sh
 !scripts/serve_rm.sh
+!fig/
+!fig/*
 !README.md
 !requirements.txt

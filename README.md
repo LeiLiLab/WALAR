@@ -1,4 +1,84 @@
-# Running Guideline
+# Mending the Holes: Mitigating Reward Hacking in Reinforcement Learning for Multilingual LLMs
+
+<p align="center">
+  <a href="null"> 📃 Paper</a> | 
+  <a href="https://github.com/LeiLiLab/qe-rl"> ⚙️ Code</a> | 
+  <a href="https://huggingface.co/kevinpro/R-PRM-7B-DPO"> 🤖 Model</a> | 
+  <a href="https://huggingface.co/datasets/kevinpro/R-PRM"> 🤗 Dataset</a> | 
+  <a href="yfliu@smail.nju.edu.cn"> 📭 Contact</a> 
+</p>
+
+
+## Overview
+
+We propose **WALAR**, a reinforcement training method using only monolingual text to elevate LLMs' translation capabilities on massive low-resource languages.  Our key insight is based on mending the holes of current state-of-the-art neural machine translation metrics, as training directly on these metrics will amplify such holes in trained LLMs. Specifically, we integrate quality estimation score, word alignment score and language alignment into WALAR's reward to mitigate the reward hacking brought by the holes. Finally, we trained an 8B LLM using WALAR. Extensive experiments on 1400 language directions demonstrate that our model outperforms the strongest prior multilingual model of the same size. 
+
+
+
+<img src="./fig/qe-rl2.drawio.png" alt="Figure 1: WALAR Framework Illustration" title="WALAR Framework Illustration"  />
+
+
+
+## Experimental Results
+
+### 📊 **Flores-101**
+
+| Model | ---- | ---- | ---- |      |      |      |      |
+| ----- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+|       |      |      |      |      |      |      |      |
+
+
+
+
+
+### 🚀 LLM-as-a-Judge
+
+We also conduct LLM-as-a-Judge using Gemini 3 Flash. Gemini 3 Flash demonstrated superior performance and earned first-place in WMT25 metric shared task. Results show that WALAR-trained LLaMAX outperforms the original model by a large margin across more than 1400 language directions.
+
+| Directions       | LLaMAX3-8B-Alpaca | WALAR     |
+| ---------------- | ----------------- | --------- |
+| en$\rightarrow$x | 54.87             | **62.14** |
+| ar$\rightarrow$x | 55.72             | **63.88** |
+| tr$\rightarrow$x | 55.06             | **63.67** |
+| hi$\rightarrow$x | 56.99             | **63.69** |
+| ru$\rightarrow$x | 58.87             | **65.39** |
+| zh$\rightarrow$x | 57.66             | **66.24** |
+| sw$\rightarrow$x | 52.36             | **60.07** |
+| Avg              | 55.93             | **63.58** |
+
+
+
+
+
+
+
+
+
+### 📄 Language Consistency
+
+To systematically assess an LLM's ability to generate translations in the desired target language, we define the *Language Consistency Rate(LCR)* as $\mathrm{LCR}=\frac{\#\{\mathrm{Lang\_detect}(y) = \mathrm{tgt}\}}{\#\text{test data}}$, where $\mathrm{Lang\_detect}(\cdot)$ is the language detection function, tgt denotes the desired target language. As shown in the figure below, WALAR also improves language consistency by a large margin, especially for low-resource target language, such as Swahili. 
+
+<img src="./fig/lang_consistency.png" alt="Figure 3: Generalization of WALAR" title="Generalization of WALAR" style="zoom: 25%;" />
+
+
+
+
+
+### 📈Generalization of WALAR
+
+Our model trained with WALAR also demonstrated strong generalization ability on language directions that are unseen during training. These results indicate that the improvements induced by WALAR can transfer beyond the training language set, potentially reducing the amount of parallel data and the number of language directions required to train massive multilingual models.
+
+
+
+<img src="./fig/generalization_xcomet.png" alt="Figure 1: R-PRM Framework Illustration" title="R-PRM Framework Illustration" style="zoom: 33%;" />
+
+
+
+
+
+
+
+# 🔧 Training Guideline
 
 ## Step 0: Configure environment & Download models
 
@@ -14,7 +94,7 @@ pip install -r requirements.txt
 
 **Download Models**
 
-LlamaX: https://huggingface.co/LLaMAX/LLaMAX3-8B
+LLaMAX: https://huggingface.co/LLaMAX/LLaMAX3-8B
 
 MetricX: https://huggingface.co/google/metricx-24-hybrid-xl-v2p6-bfloat16
 
@@ -41,7 +121,7 @@ hanlp (Chinese tokenizer): https://file.hankcs.com/hanlp/tok/coarse_electra_smal
 
 
 
-## Step 1: Set up Hybrid Reward
+## Step 1: Set up WALAR's Reward
 
 **Prerequisite: 1 gpu needed**
 
@@ -64,14 +144,14 @@ bash serve_rm.sh
 * `base_model`: the base model you want to evaluate. The paths for the models are hard-coded in line 517-526 in `openrlhf/openrlhf/cli/serve_rm.py`.
 * `port`: The port of the reward model on your machine.
 * `max_len`: The maximum input sequence length.
-* `rule`: whether to penalize  `\n` in the translation outputs. Set `True` will give the lowest reward if `\n`  be generated in the output.
+* `rule`: whether to penalize  `\n` in the translation outputs. Set `True` will give the lowest reward if `\n`  be generated in the output. (It's recommended to be True if and only if the qe model is a hybrid model)
 
 * `lang_detect`: whether to turn on language detector or not. Set `True` to turn it on.
 
 * `align`: whether to use word-alignment or not. Set `True` will turn it on.
 
 * `masklid`: whether to mask the code-mixing part in the translation outputs. Set `True` will turn it on.
-* `batch_size`: the batch size for the qe model to evaluate at one moment
+* `batch_size`: the batch size for the qe model to evaluate each time
 
 
 
@@ -89,14 +169,22 @@ bash examples/scripts/train.sh
 
 
 
-
-
 **Parameter Explanation**
 
-* `model`: The model you want to use. Please follow the `path_dict` in line 27-29
-
-* `dataname`: The dataset you want to use. Please refer to the line 76 `prompt_data` for further info
-
+* `model`: The model you want to use. Please follow the `path_dict` in line 27-29. (You can add more models by directly modifying `path_dict`)
+* `dataname`: The dataset you want to use. Please refer to the line 76 `prompt_data` for further info. (e.g., The dataset you want to use is called: `abc.jsonl`, then you simply set `dataname=abc`)
 * `size`: The model size you want to use. You can set whatever you want. It won't affect the final results and it will only affect the name appears on your checkpoint directory and wandb.
-
 * `reward_name`: The reward name you want to use.  You can set whatever you want. It won't affect the final results and it will only affect the name appears on your checkpoint directory and wandb.
+
+For the usage of other parameters, please refer to the documnetation of OpenRLHF
+
+
+
+**Hyperparameters**
+
+* Batch Size: 1024
+* Epochs: 1
+* Learning Rates: `5e-7`
+* Rollout Nums: 8
+* Temperature: 1
+

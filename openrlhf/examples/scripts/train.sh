@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=4,5,6,7
+export CUDA_VISIBLE_DEVICES=2,3,4,5
 num_gpus=$(echo "$CUDA_VISIBLE_DEVICES" | awk -F',' '{print NF}')
 ray start --head --node-ip-address 0.0.0.0 --num-gpus ${num_gpus}
 
@@ -29,7 +29,7 @@ path_dict["Qwen"]="/mnt/gemini/data1/yifengliu/model/Qwen3-4B"
 path_dict["LlamaX"]="/mnt/gemini/data1/yifengliu/model/LLaMAX3-8B-Alpaca"
 
 model="LlamaX"
-dataname="schedule_mix10k"
+dataname="final_llamax_mix2k"
 size="8B"
 reward_name="new_qe+lang_detect"
 
@@ -89,12 +89,12 @@ ray job submit --address="http://127.0.0.1:8265" \
     --gradient_checkpointing \
     --temperature 1 \
     --save_steps 50 \
-    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}-${size}-${dataname}-1M-bsz128 \
-    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}-${size}-${dataname}-1M-bsz128 \
+    --save_path /mnt/gemini/data1/yifengliu/checkpoints/final/${reward_name}-${model}-${size}-${data_name}-bsz128 \
+    --ckpt_path /mnt/gemini/data1/yifengliu/checkpoints/${reward_name}-${model}-${size}-${data_name}-bsz128 \
     --load_checkpoint \
     --save_hf_ckpt \
     --use_wandb ${wandb_token}\
-    --wandb_run_name "${reward_name}-${model}-${size}-${dataname}-bsz128" \
+    --wandb_run_name "${reward_name}-${model}-${size}-${data_name}" \
     --enforce_eager \
     --vllm_enable_sleep \
     --deepspeed_enable_sleep
